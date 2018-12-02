@@ -10,6 +10,6 @@ const presets = [
   ],
 ];
 
-const ignore = ["**/*.test.js"];
+const ignore = process.env.NODE_ENV === "test" ? [] : ["**/*.test.js"];
 
 module.exports = { presets, ignore };
