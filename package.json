@@ -41,7 +41,10 @@
   },
   "dependencies": {
     "googleapis": "27",
-    "koa": "2.6.2"
+    "koa": "2.6.2",
+    "koa-bodyparser": "4.2.1"
   },
-  "cacheDirectories": ["build/"]
+  "cacheDirectories": [
+    "build/"
+  ]
 }

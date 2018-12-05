@@ -12,9 +12,26 @@ describe("server", () => {
     testServer.close();
   });
 
-  it("GET /slack/commands should return 200", async () => {
+  it("POST /slack/burrito should return 200", async () => {
     await supertest(testServer)
-      .get("/slack/commands")
+      .post("/slack/burrito")
       .expect(200);
+  });
+
+  it("POST /slack/burrito should print payload to stdout", async () => {
+    const headers = {
+      headerKey: "headerValue",
+    };
+    const payload = {
+      payloadKey: "payloadValue",
+    };
+    const spy = jest.spyOn(console, "info").mockImplementation(() => {});
+
+    await supertest(testServer)
+      .post("/slack/burrito")
+      .set(headers)
+      .send(payload);
+
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 });
