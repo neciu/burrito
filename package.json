@@ -6,6 +6,10 @@
   "author": "Tomasz Netczuk <contact@netczuk.pl>",
   "license": "MIT",
   "private": true,
+  "engines": {
+    "node": "10.4.x",
+    "yarn": "1.12.x"
+  },
   "devDependencies": {
     "@babel/cli": "7.1.5",
     "@babel/core": "7.1.6",
@@ -29,10 +33,13 @@
     "lint": "eslint .",
     "lint:fix": "yarn lint --fix",
     "validate": "yarn lint && yarn flow",
-    "build": "yarn validate && babel ./src/ -d ./build/"
+    "build": "babel src/ -d build/",
+    "postinstall": "yarn build",
+    "start": "node build/app.js"
   },
   "dependencies": {
     "googleapis": "27",
     "koa": "2.6.2"
-  }
+  },
+  "cacheDirectories": ["build/"]
 }
