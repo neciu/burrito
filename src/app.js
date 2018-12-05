@@ -1,11 +1,8 @@
 // @flow strict
 
 import checkEnvs from "./checkEnvs";
+import server from "./server";
 
 checkEnvs();
 
-export function f(a: number): number {
-  return a * 2;
-}
-
-f(2);
+server.listen(process.env.PORT);

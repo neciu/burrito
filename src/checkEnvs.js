@@ -1,6 +1,7 @@
 // @flow strict
 
 const required_envs = [
+  "PORT",
   "GOOGLE_ACCOUNT_KEY",
   "GOOGLE_ACCOUNT_EMAIL",
   "GOOGLE_SHEET_ID",
