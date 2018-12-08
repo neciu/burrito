@@ -2,6 +2,7 @@
 
 const required_envs = [
   "PORT",
+  "SLACK_SIGNING_SECRET",
   "GOOGLE_ACCOUNT_KEY",
   "GOOGLE_ACCOUNT_EMAIL",
   "GOOGLE_SHEET_ID",
