@@ -2,7 +2,7 @@ import supertest from "supertest";
 
 import server, { slackAuthenticator } from "./server";
 import validateSlackSignature from "./validateSlackSignature";
-import dispatchCommand from "./dispatchCommand";
+import dispatchCommand, { getBurritoDialog } from "./dispatchCommand";
 
 jest.mock("./validateSlackSignature");
 jest.mock("./dispatchCommand");
@@ -70,21 +70,6 @@ describe("server", () => {
       responseUrl: payload.response_url,
     });
   });
-
-  it("POST /slack/actions should print jsonified payload", async () => {
-    const payload = { przestepstwo: "okazja" };
-    const rawPayload = {
-      payload: JSON.stringify(payload),
-    };
-
-    await supertest(testServer)
-      .post("/slack/actions")
-      .send(rawPayload)
-      .expect(200);
-
-    expect(console.info).toHaveBeenCalledWith("/slack/actions payload:");
-    expect(console.info).toHaveBeenCalledWith(payload);
-  });
 });
 
 describe("slackAuthenticator", () => {
@@ -141,5 +126,40 @@ describe("slackAuthenticator", () => {
     await slackAuthenticator(ctx, nextSpy);
 
     expect(nextSpy).toBeCalled();
+  });
+});
+
+describe("POST /slack/actions", () => {
+  let testServer = undefined;
+
+  beforeAll(() => {
+    testServer = server.listen();
+  });
+
+  afterAll(() => {
+    testServer.close();
+  });
+
+  it("should fire ShowBurritoDialogCommand", async () => {
+    const payload = {
+      callback_id: "item_order",
+      actions: [{ name: "orderItem", value: "burrito" }],
+      trigger_id: "trigger_id",
+    };
+    const result = {
+      text: "Okidoki!",
+    };
+    dispatchCommand.mockResolvedValue(result);
+
+    await supertest(testServer)
+      .post("/slack/actions")
+      .send({ payload: JSON.stringify(payload) })
+      .expect(200, result);
+
+    expect(dispatchCommand).toHaveBeenCalledWith({
+      command: "showBurritoDialog",
+      triggerId: payload.trigger_id,
+      dialog: getBurritoDialog(payload.callback_id),
+    });
   });
 });

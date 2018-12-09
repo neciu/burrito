@@ -5,7 +5,7 @@ import koaRoute from "koa-route";
 import bodyParser from "koa-bodyparser";
 import validateSignature from "./validateSlackSignature";
 import { KoaCtx, KoaNext } from "./types";
-import dispatchCommand from "./dispatchCommand";
+import dispatchCommand, { getBurritoDialog } from "./dispatchCommand";
 
 const server = new Koa();
 server.use(bodyParser());
@@ -57,10 +57,19 @@ async function handleCommands(ctx) {
 }
 
 async function handleActions(ctx) {
-  console.info("/slack/actions payload:");
-  console.info(JSON.parse(ctx.request.body.payload));
+  const payload = JSON.parse(ctx.request.body.payload);
+
+  let result = {};
+  if (payload.callback_id === "item_order") {
+    result = await dispatchCommand({
+      command: "showBurritoDialog",
+      triggerId: payload.trigger_id,
+      dialog: getBurritoDialog(payload.callback_id),
+    });
+  }
 
   ctx.status = 200;
+  ctx.body = result;
 }
 
 export default server;

@@ -12,3 +12,18 @@ declare export class KoaCtx {
 }
 
 declare export function KoaNext(): void;
+
+export type Dialog = {
+  callbackId: string,
+  title: string,
+  submitLabel: string,
+  elements: Array<{
+    label: string,
+    type: "select",
+    name: string,
+    options: Array<{
+      label: string,
+      value: string,
+    }>,
+  }>,
+};
