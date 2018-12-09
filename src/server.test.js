@@ -24,30 +24,30 @@ describe("server", () => {
     console.info.mockClear();
   });
 
-  it("POST /slack/burrito should return 200", async () => {
+  it("POST /slack/commands should return 200", async () => {
     await supertest(testServer)
-      .post("/slack/burrito")
+      .post("/slack/commands")
       .expect(200);
   });
 
-  it("POST /slack/burrito should print payload to stdout", async () => {
+  it("POST /slack/commands should print payload to stdout", async () => {
     const headers = {
       headerKey: "headerValue",
     };
     const payload = {
       payloadKey: "payloadValue",
     };
-    const spy = jest.spyOn(console, "info").mockImplementation(() => {});
+    const spy = jest.spyOn(console, "info");
 
     await supertest(testServer)
-      .post("/slack/burrito")
+      .post("/slack/commands")
       .set(headers)
       .send(payload);
 
     expect(spy).toHaveBeenCalledTimes(2);
   });
 
-  it("POST /slack/commands/burrito should dispatch order command", async () => {
+  it("POST /slack/commands should dispatch order command", async () => {
     const payload = {
       user_name: "user.name",
       command: "/burrito",
@@ -58,7 +58,7 @@ describe("server", () => {
     dispatchCommand.mockResolvedValue({ text: "Response from dispatch" });
 
     await supertest(testServer)
-      .post("/slack/commands/burrito")
+      .post("/slack/commands")
       .send(payload)
       .expect(200, {
         text: "Response from dispatch",
@@ -69,6 +69,21 @@ describe("server", () => {
       author: payload.user_name,
       responseUrl: payload.response_url,
     });
+  });
+
+  it("POST /slack/actions should print jsonified payload", async () => {
+    const payload = { przestepstwo: "okazja" };
+    const rawPayload = {
+      payload: JSON.stringify(payload),
+    };
+
+    await supertest(testServer)
+      .post("/slack/actions")
+      .send(rawPayload)
+      .expect(200);
+
+    expect(console.info).toHaveBeenCalledWith("/slack/actions payload:");
+    expect(console.info).toHaveBeenCalledWith(payload);
   });
 });
 
