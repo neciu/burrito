@@ -2,8 +2,10 @@ import supertest from "supertest";
 
 import server, { slackAuthenticator } from "./server";
 import validateSlackSignature from "./validateSlackSignature";
+import dispatchCommand from "./dispatchCommand";
 
 jest.mock("./validateSlackSignature");
+jest.mock("./dispatchCommand");
 
 describe("server", () => {
   let testServer = undefined;
@@ -43,6 +45,30 @@ describe("server", () => {
       .send(payload);
 
     expect(spy).toHaveBeenCalledTimes(2);
+  });
+
+  it("POST /slack/commands/burrito should dispatch order command", async () => {
+    const payload = {
+      user_name: "user.name",
+      command: "/burrito",
+      text: "order",
+      response_url: "https://hooks.slack.com/commands/XXXXYYYY/ZZZZ/AAAABBBB",
+    };
+
+    dispatchCommand.mockResolvedValue({ text: "Response from dispatch" });
+
+    await supertest(testServer)
+      .post("/slack/commands/burrito")
+      .send(payload)
+      .expect(200, {
+        text: "Response from dispatch",
+      });
+
+    expect(dispatchCommand).toHaveBeenCalledWith({
+      command: "order",
+      author: payload.user_name,
+      responseUrl: payload.response_url,
+    });
   });
 });
 

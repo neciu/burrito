@@ -4,6 +4,7 @@ import Koa from "koa";
 import bodyParser from "koa-bodyparser";
 import validateSignature from "./validateSlackSignature";
 import { KoaCtx, KoaNext } from "./types";
+import dispatchCommand from "./dispatchCommand";
 
 const server = new Koa();
 server.use(bodyParser());
@@ -33,6 +34,21 @@ server.use(async ctx => {
 
   console.info("Headers", ctx.request.headers);
   console.info("Payload", ctx.request.body);
+
+  const {
+    user_name: userName,
+    command,
+    text,
+    response_url: responseUrl,
+  } = ctx.request.body;
+
+  if (command === "/burrito" && text === "order") {
+    ctx.body = await dispatchCommand({
+      author: userName,
+      command: "order",
+      responseUrl: responseUrl,
+    });
+  }
 });
 
 export default server;
