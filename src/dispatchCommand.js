@@ -9,6 +9,7 @@ export const orderResponse = {
   attachments: [
     {
       text: "Choose your destiny :burrito: :fiestaparrot:",
+      callback_id: "item_order",
       actions: [
         {
           name: "orderItem",
