@@ -142,6 +142,7 @@ describe("POST /slack/actions", () => {
 
   it("should fire ShowBurritoDialogCommand", async () => {
     const payload = {
+      type: "interactive_message",
       callback_id: "item_order",
       actions: [{ name: "orderItem", value: "burrito" }],
       trigger_id: "trigger_id",

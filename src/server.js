@@ -60,12 +60,27 @@ async function handleActions(ctx) {
   const payload = JSON.parse(ctx.request.body.payload);
 
   let result = {};
-  if (payload.callback_id === "item_order") {
-    result = await dispatchCommand({
-      command: "showBurritoDialog",
-      triggerId: payload.trigger_id,
-      dialog: getBurritoDialog(payload.callback_id),
-    });
+  if (payload.type === "interactive_message") {
+    switch (payload.callback_id) {
+      case "item_order": {
+        result = await dispatchCommand({
+          command: "showBurritoDialog",
+          triggerId: payload.trigger_id,
+          dialog: getBurritoDialog(payload.callback_id),
+        });
+        break;
+      }
+      default: {
+        console.error(
+          "Unsupported interactive action with callback_id: ",
+          payload.callback_id,
+        );
+        console.error("Full body: ", ctx.request.body);
+      }
+    }
+  } else {
+    console.error("Unsupported action with type: ", payload.type);
+    console.error("Full body: ", ctx.request.body);
   }
 
   ctx.status = 200;
