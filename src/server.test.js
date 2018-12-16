@@ -22,6 +22,7 @@ describe("server", () => {
 
   afterEach(() => {
     console.info.mockClear();
+    dispatchCommand.mockRestore();
   });
 
   it("POST /slack/commands should return 200", async () => {
@@ -147,15 +148,11 @@ describe("POST /slack/actions", () => {
       actions: [{ name: "orderItem", value: "burrito" }],
       trigger_id: "trigger_id",
     };
-    const result = {
-      text: "Okidoki!",
-    };
-    dispatchCommand.mockResolvedValue(result);
 
     await supertest(testServer)
       .post("/slack/actions")
       .send({ payload: JSON.stringify(payload) })
-      .expect(200, result);
+      .expect(204, {});
 
     expect(dispatchCommand).toHaveBeenCalledWith({
       command: "showBurritoDialog",

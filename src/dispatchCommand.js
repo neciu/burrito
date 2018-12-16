@@ -150,8 +150,10 @@ export default async function dispatchCommand(
   switch (command.command) {
     case "order":
       return orderResponse;
-    case "showBurritoDialog":
-      return slackDialogOpener(command.triggerId, command.dialog);
+    case "showBurritoDialog": {
+      await slackDialogOpener(command.triggerId, command.dialog);
+      return undefined; // return undefined to keep buttons in place
+    }
     case "addOrderItem":
       return appendEvent(command);
   }

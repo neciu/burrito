@@ -31,9 +31,11 @@ describe("ShowBurritoOrderFormCommand", () => {
       triggerId,
       dialog,
     };
+    const expectedResult = undefined;
 
-    await dispatchCommand(command);
+    const result = await dispatchCommand(command);
 
+    expect(result).toEqual(expectedResult);
     expect(slackDialogOpener).toHaveBeenCalledWith(triggerId, dialog);
   });
 });
