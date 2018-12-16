@@ -2,6 +2,7 @@
 
 import slackDialogOpener from "./slackDialogOpener";
 import type { Dialog } from "./types";
+import { appendEvent } from "./eventStore";
 
 declare type OrderCommand = {
   author: string,
@@ -14,7 +15,7 @@ declare type ShowBurritoDialogCommand = {
   dialog: Dialog,
 };
 
-declare type AddOrderItemCommand = {
+export type AddOrderItemCommand = {
   command: "addOrderItem",
   userName: string,
   orderItem: {
@@ -151,5 +152,7 @@ export default async function dispatchCommand(
       return orderResponse;
     case "showBurritoDialog":
       return slackDialogOpener(command.triggerId, command.dialog);
+    case "addOrderItem":
+      return appendEvent(command);
   }
 }
