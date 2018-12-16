@@ -163,4 +163,39 @@ describe("POST /slack/actions", () => {
       dialog: getBurritoDialog(payload.callback_id),
     });
   });
+
+  it("should fire AddOrderItemCommand", async () => {
+    const payload = {
+      type: "dialog_submission",
+      user: {
+        name: "mmmm Burrito!",
+      },
+      callback_id: "item_order",
+      submission: {
+        filling: "beef",
+        sauce: "1",
+        drink: "mangolade",
+      },
+    };
+    const result = {
+      text: "Order Item added!",
+    };
+    dispatchCommand.mockResolvedValue(result);
+
+    await supertest(testServer)
+      .post("/slack/actions")
+      .send({ payload: JSON.stringify(payload) })
+      .expect(200, result);
+
+    expect(dispatchCommand).toHaveBeenCalledWith({
+      command: "addOrderItem",
+      userName: "mmmm Burrito!",
+      orderItem: {
+        type: "burrito",
+        filling: "beef",
+        sauce: "1",
+        drink: "mangolade",
+      },
+    });
+  });
 });

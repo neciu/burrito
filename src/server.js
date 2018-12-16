@@ -72,7 +72,30 @@ async function handleActions(ctx) {
       }
       default: {
         console.error(
-          "Unsupported interactive action with callback_id: ",
+          "Unsupported interactive message with callback_id: ",
+          payload.callback_id,
+        );
+        console.error("Full body: ", ctx.request.body);
+      }
+    }
+  } else if (payload.type === "dialog_submission") {
+    switch (payload.callback_id) {
+      case "item_order": {
+        result = await dispatchCommand({
+          command: "addOrderItem",
+          userName: payload.user.name,
+          orderItem: {
+            type: "burrito",
+            filling: payload.submission.filling,
+            sauce: payload.submission.sauce,
+            drink: payload.submission.drink,
+          },
+        });
+        break;
+      }
+      default: {
+        console.error(
+          "Unsupported dialog submission with callback_id: ",
           payload.callback_id,
         );
         console.error("Full body: ", ctx.request.body);

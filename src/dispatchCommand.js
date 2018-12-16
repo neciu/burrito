@@ -14,6 +14,17 @@ declare type ShowBurritoDialogCommand = {
   dialog: Dialog,
 };
 
+declare type AddOrderItemCommand = {
+  command: "addOrderItem",
+  userName: string,
+  orderItem: {
+    type: "burrito",
+    filling: string,
+    sauce: string,
+    drink: string,
+  },
+};
+
 export const orderResponse = {
   attachments: [
     {
@@ -133,7 +144,7 @@ export function getBurritoDialog(callbackId: string): Dialog {
 }
 
 export default async function dispatchCommand(
-  command: OrderCommand | ShowBurritoDialogCommand,
+  command: OrderCommand | ShowBurritoDialogCommand | AddOrderItemCommand,
 ) {
   switch (command.command) {
     case "order":
