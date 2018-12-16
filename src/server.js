@@ -90,6 +90,7 @@ async function handleActions(ctx) {
             sauce: payload.submission.sauce,
             drink: payload.submission.drink,
           },
+          responseUrl: payload.response_url,
         });
         break;
       }

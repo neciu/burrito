@@ -2,10 +2,10 @@
 
 import dispatchCommand, { orderResponse } from "./dispatchCommand";
 import type { AddOrderItemCommand } from "./dispatchCommand";
-import slackDialogOpener from "./slackDialogOpener";
+import { openDialog, respond } from "./slackApi";
 import { appendEvent } from "./eventStore";
 
-jest.mock("./slackDialogOpener");
+jest.mock("./slackApi");
 jest.mock("./eventStore");
 
 describe("OrderCommand", () => {
@@ -36,29 +36,43 @@ describe("ShowBurritoOrderFormCommand", () => {
     const result = await dispatchCommand(command);
 
     expect(result).toEqual(expectedResult);
-    expect(slackDialogOpener).toHaveBeenCalledWith(triggerId, dialog);
+    expect(openDialog).toHaveBeenCalledWith(triggerId, dialog);
   });
 });
 
 describe("AddOrderItemCommand", () => {
-  it("should create proper event", async () => {
-    const command: AddOrderItemCommand = {
-      command: "addOrderItem",
-      userName: "My user name",
-      orderItem: {
-        type: "burrito",
-        filling: "beef",
-        sauce: "7",
-        drink: "mangolade",
-      },
-    };
-    const mockedResult = { text: "OL RIGT" };
-    // $FlowFixMe
-    appendEvent.mockResolvedValue(mockedResult);
+  const command: AddOrderItemCommand = {
+    command: "addOrderItem",
+    userName: "My user name",
+    orderItem: {
+      type: "burrito",
+      filling: "beef",
+      sauce: "7",
+      drink: "mangolade",
+    },
+    responseUrl: "https://lol.kat.zz",
+  };
+
+  it("should return undefined", async () => {
+    const expectedResult = undefined;
 
     const result = await dispatchCommand(command);
 
-    expect(result).toEqual(mockedResult);
+    expect(result).toEqual(expectedResult);
+  });
+
+  it("should create proper event", async () => {
+    await dispatchCommand(command);
+
     expect(appendEvent).toHaveBeenCalledWith(command);
+  });
+
+  it("send response", async () => {
+    await dispatchCommand(command);
+
+    expect(respond).toHaveBeenCalledWith(
+      command.responseUrl,
+      ":white_check_mark: You have ordered: burrito, beef, 7, mangolade",
+    );
   });
 });

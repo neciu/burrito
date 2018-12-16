@@ -1,6 +1,6 @@
 // @flow strict
 
-import slackDialogOpener from "./slackDialogOpener";
+import { openDialog, respond } from "./slackApi";
 import type { Dialog } from "./types";
 import { appendEvent } from "./eventStore";
 
@@ -24,6 +24,7 @@ export type AddOrderItemCommand = {
     sauce: string,
     drink: string,
   },
+  responseUrl: string,
 };
 
 export const orderResponse = {
@@ -151,10 +152,17 @@ export default async function dispatchCommand(
     case "order":
       return orderResponse;
     case "showBurritoDialog": {
-      await slackDialogOpener(command.triggerId, command.dialog);
+      await openDialog(command.triggerId, command.dialog);
       return undefined; // return undefined to keep buttons in place
     }
-    case "addOrderItem":
-      return appendEvent(command);
+    case "addOrderItem": {
+      await appendEvent(command);
+      await respond(
+        command.responseUrl,
+        `:white_check_mark: You have ordered: ${command.orderItem.type}, ${
+          command.orderItem.filling
+        }, ${command.orderItem.sauce}, ${command.orderItem.drink}`,
+      );
+    }
   }
 }

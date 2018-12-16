@@ -173,6 +173,7 @@ describe("POST /slack/actions", () => {
         sauce: "1",
         drink: "mangolade",
       },
+      response_url: "https://lol.kat.zz",
     };
     const result = {
       text: "Order Item added!",
@@ -193,6 +194,7 @@ describe("POST /slack/actions", () => {
         sauce: "1",
         drink: "mangolade",
       },
+      responseUrl: "https://lol.kat.zz",
     });
   });
 });

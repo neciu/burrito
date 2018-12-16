@@ -14,6 +14,7 @@ describe("appendEvent", () => {
         sauce: "7",
         drink: "mangolade",
       },
+      responseUrl: "https://lol.kat.zz",
     };
     const mockedResult = { text: "errything is ok!" };
     const spy = jest.fn().mockResolvedValue(mockedResult);
