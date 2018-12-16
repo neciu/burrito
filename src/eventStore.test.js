@@ -4,6 +4,18 @@ import type { AddOrderItemCommand } from "./dispatchCommand";
 import * as eventStore from "./eventStore";
 
 describe("appendEvent", () => {
+  let now;
+  let dateMock;
+
+  beforeAll(() => {
+    now = Date.now();
+    dateMock = jest.spyOn(global.Date, "now").mockReturnValue(now);
+  });
+
+  afterAll(() => {
+    dateMock.mockRestore();
+  });
+
   it("should handle AddOrderItemCommand correctly", async () => {
     const command: AddOrderItemCommand = {
       command: "addOrderItem",
@@ -23,6 +35,7 @@ describe("appendEvent", () => {
 
     expect(result).toEqual(mockedResult);
     expect(spy).toBeCalledWith([
+      new Date(now).toISOString(),
       "addOrderItem",
       1,
       "My user name",

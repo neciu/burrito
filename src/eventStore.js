@@ -10,6 +10,7 @@ export async function appendEvent(
   switch (command.command) {
     case "addOrderItem": {
       return await appendRow([
+        new Date(Date.now()).toISOString(),
         command.command,
         1,
         command.userName,
