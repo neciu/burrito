@@ -28,10 +28,15 @@ const api: GoogleApi = {
 export default api;
 
 function getJwtAuth() {
+  const privateKey = (process.env.GOOGLE_ACCOUNT_KEY || "").replace(
+    /\\n/g,
+    "\n",
+  );
+
   return new google.auth.JWT(
     process.env.GOOGLE_ACCOUNT_EMAIL,
     null,
-    process.env.GOOGLE_ACCOUNT_KEY,
+    privateKey,
     ["https://www.googleapis.com/auth/spreadsheets"],
   );
 }

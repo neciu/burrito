@@ -28,7 +28,7 @@ export async function appendEvent(
 async function _appendRow(rowData: Array<string | number>) {
   const request = {
     spreadsheetId: process.env.GOOGLE_SHEET_ID,
-    range: "Class Data!A33:E",
+    range: "Class Data!A:A",
     valueInputOption: "USER_ENTERED",
     resource: {
       values: [rowData],
