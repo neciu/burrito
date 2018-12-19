@@ -1,19 +1,25 @@
 // @flow strict
 
+import uuidv4 from "uuid/v4";
 import type { AddOrderItemCommand } from "./dispatchCommand";
 import * as eventStore from "./eventStore";
+
+jest.mock("uuid/v4");
 
 describe("appendEvent", () => {
   let now;
   let dateMock;
+  const uuid = "3a017fc5-4f50-4db9-b0ce-4547ba0a1bfd";
 
   beforeAll(() => {
     now = Date.now();
     dateMock = jest.spyOn(global.Date, "now").mockReturnValue(now);
+    uuidv4.mockReturnValue(uuid);
   });
 
   afterAll(() => {
     dateMock.mockRestore();
+    uuidv4.mockRestore();
   });
 
   it("should handle AddOrderItemCommand correctly", async () => {
@@ -35,6 +41,7 @@ describe("appendEvent", () => {
 
     expect(result).toEqual(mockedResult);
     expect(spy).toBeCalledWith([
+      uuid,
       new Date(now).toISOString(),
       "addOrderItem",
       1,

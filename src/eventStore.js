@@ -1,5 +1,6 @@
 // @flow strict
 
+import uuidv4 from "uuid/v4";
 import type { AddOrderItemCommand } from "./dispatchCommand";
 import googleApi from "./googleApi";
 
@@ -10,6 +11,7 @@ export async function appendEvent(
   switch (command.command) {
     case "addOrderItem": {
       return await appendRow([
+        uuidv4(),
         new Date(Date.now()).toISOString(),
         command.command,
         1,
