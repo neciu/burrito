@@ -174,6 +174,7 @@ describe("POST /slack/actions", () => {
         drink: "mangolade",
       },
       response_url: "https://lol.kat.zz",
+      state: "burrito",
     };
     const result = {
       text: "Order Item added!",
