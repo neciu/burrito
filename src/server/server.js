@@ -3,14 +3,14 @@
 import Koa from "koa";
 import koaRoute from "koa-route";
 import bodyParser from "koa-bodyparser";
-import validateSignature from "./validateSlackSignature";
-import { KoaCtx, KoaNext } from "./types";
+import validateSignature from "../validateSlackSignature";
+import { KoaCtx, KoaNext } from "../types";
 import dispatchCommand, {
   getBurritoDialog,
   getSmallBurritoDialog,
   getQuesadillaDialog,
   getSmallQuesadillaDialog,
-} from "./dispatchCommand";
+} from "../dispatchCommand";
 
 const server = new Koa();
 server.use(bodyParser());

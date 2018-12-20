@@ -1,11 +1,11 @@
 import supertest from "supertest";
 
 import server, { slackAuthenticator } from "./server";
-import validateSlackSignature from "./validateSlackSignature";
-import dispatchCommand, { getBurritoDialog } from "./dispatchCommand";
+import validateSlackSignature from "../validateSlackSignature";
+import dispatchCommand, { getBurritoDialog } from "../dispatchCommand";
 
-jest.mock("./validateSlackSignature");
-jest.mock("./dispatchCommand");
+jest.mock("validateSlackSignature");
+jest.mock("dispatchCommand");
 
 describe("server", () => {
   let testServer = undefined;
