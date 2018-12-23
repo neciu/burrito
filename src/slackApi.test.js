@@ -2,7 +2,7 @@
 
 import got from "got";
 import { getBurritoDialog } from "./dispatchCommand";
-import { openDialog, dialogUrl, respond } from "./slackApi";
+import { dialogUrl, openDialog, respond } from "./slackApi";
 
 const token = "token ohai!";
 process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN = token;

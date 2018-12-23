@@ -2,7 +2,8 @@ import supertest from "supertest";
 
 import server, { slackAuthenticator } from "./server";
 import validateSlackSignature from "../validateSlackSignature";
-import dispatchCommand, { getBurritoDialog } from "../dispatchCommand";
+import dispatchCommand from "../dispatchCommand";
+import { CommandType } from "commands";
 
 jest.mock("validateSlackSignature");
 jest.mock("dispatchCommand");
@@ -55,6 +56,9 @@ describe("server", () => {
       text: "order",
       response_url: "https://hooks.slack.com/commands/XXXXYYYY/ZZZZ/AAAABBBB",
     };
+    const command = {
+      type: CommandType.show_order_item_buttons,
+    };
 
     dispatchCommand.mockResolvedValue({ text: "Response from dispatch" });
 
@@ -65,11 +69,7 @@ describe("server", () => {
         text: "Response from dispatch",
       });
 
-    expect(dispatchCommand).toHaveBeenCalledWith({
-      command: "order",
-      author: payload.user_name,
-      responseUrl: payload.response_url,
-    });
+    expect(dispatchCommand).toHaveBeenCalledWith(command);
   });
 });
 

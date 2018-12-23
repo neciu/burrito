@@ -1,25 +1,27 @@
 // @flow strict
 
 import uuidv4 from "uuid/v4";
-import type { AddOrderItemCommand } from "./dispatchCommand";
 import googleApi from "./googleApi";
+import type { AddOrderItemCommand } from "commands";
+import { CommandType } from "commands";
 
 export async function appendEvent(
   command: AddOrderItemCommand,
   appendRow: (rowData: Array<string | number>) => Promise<any> = _appendRow,
 ) {
-  switch (command.command) {
-    case "addOrderItem": {
+  switch (command.type) {
+    case CommandType.add_order_item: {
       return await appendRow([
         uuidv4(),
         new Date(Date.now()).toISOString(),
-        command.command,
+        command.type,
         1,
         command.userName,
-        command.orderItem.type,
-        command.orderItem.filling,
-        command.orderItem.sauce,
-        command.orderItem.drink,
+        command.item.type,
+        command.item.filling,
+        command.item.sauce,
+        command.item.drink || "",
+        command.item.comments,
       ]);
     }
   }

@@ -7,6 +7,7 @@ import validateSignature from "../validateSlackSignature";
 import { KoaCtx, KoaNext } from "../types";
 import dispatchCommand from "../dispatchCommand";
 import { handleActions } from "server/actions";
+import { CommandType } from "commands";
 
 const server = new Koa();
 server.use(bodyParser());
@@ -49,9 +50,7 @@ async function handleCommands(ctx) {
 
     if (command === "/burrito" && text === "order") {
       ctx.body = await dispatchCommand({
-        author: userName,
-        command: "order",
-        responseUrl: responseUrl,
+        type: CommandType.show_order_item_buttons,
       });
     }
   }

@@ -1,1 +1,3 @@
-export default from "server/server";
+import server from "server/server";
+
+export default server;

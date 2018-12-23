@@ -1,8 +1,10 @@
 // @flow strict
 
 import uuidv4 from "uuid/v4";
-import type { AddOrderItemCommand } from "./dispatchCommand";
 import * as eventStore from "./eventStore";
+import type { AddOrderItemCommand } from "commands";
+import { CommandType } from "commands";
+import OrderItemType from "OrderItemType";
 
 jest.mock("uuid/v4");
 
@@ -22,34 +24,47 @@ describe("appendEvent", () => {
     uuidv4.mockRestore();
   });
 
-  it("should handle AddOrderItemCommand correctly", async () => {
-    const command: AddOrderItemCommand = {
-      command: "addOrderItem",
-      userName: "My user name",
-      orderItem: {
-        type: "burrito",
-        filling: "beef",
-        sauce: "7",
-        drink: "mangolade",
-      },
-      responseUrl: "https://lol.kat.zz",
-    };
-    const mockedResult = { text: "errything is ok!" };
-    const spy = jest.fn().mockResolvedValue(mockedResult);
+  it.each`
+    userName           | itemType                           | filling         | sauce  | drink         | comments           | expectedValues
+    ${"mr.john.smith"} | ${OrderItemType.big_burrito}       | ${"beef"}       | ${"1"} | ${"lemonade"} | ${"I like tacos!"} | ${["mr.john.smith", OrderItemType.big_burrito, "beef", "1", "lemonade", "I like tacos!"]}
+    ${"admin1"}        | ${OrderItemType.quesadilla}        | ${"vegetarian"} | ${"4"} | ${undefined}  | ${""}              | ${["admin1", OrderItemType.quesadilla, "vegetarian", "4", "", ""]}
+    ${"admin2"}        | ${OrderItemType.double_quesadilla} | ${"pork"}       | ${"7"} | ${undefined}  | ${"I like tacos!"} | ${["admin2", OrderItemType.double_quesadilla, "pork", "7", "", "I like tacos!"]}
+  `(
+    "should handle AddOrderItemCommand with $userName $itemType $filling $sauce $drink $comments",
+    async ({
+      userName,
+      itemType,
+      filling,
+      sauce,
+      drink,
+      comments,
+      expectedValues,
+    }) => {
+      const command: AddOrderItemCommand = {
+        type: CommandType.add_order_item,
+        responseUrl: "https://lol.kat.zz",
+        userName: userName,
+        item: {
+          type: itemType,
+          filling: filling,
+          sauce: sauce,
+          drink: drink,
+          comments: comments,
+        },
+      };
+      const mockedResult = { text: "errything is ok!" };
+      const spy = jest.fn().mockResolvedValue(mockedResult);
 
-    const result = await eventStore.appendEvent(command, spy);
+      const result = await eventStore.appendEvent(command, spy);
 
-    expect(result).toEqual(mockedResult);
-    expect(spy).toBeCalledWith([
-      uuid,
-      new Date(now).toISOString(),
-      "addOrderItem",
-      1,
-      "My user name",
-      "burrito",
-      "beef",
-      "7",
-      "mangolade",
-    ]);
-  });
+      expect(result).toEqual(mockedResult);
+      expect(spy).toBeCalledWith([
+        uuid,
+        new Date(now).toISOString(),
+        CommandType.add_order_item,
+        1,
+        ...expectedValues,
+      ]);
+    },
+  );
 });
