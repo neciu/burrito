@@ -32,23 +32,6 @@ describe("server", () => {
       .expect(200);
   });
 
-  it("POST /slack/commands should print payload to stdout", async () => {
-    const headers = {
-      headerKey: "headerValue",
-    };
-    const payload = {
-      payloadKey: "payloadValue",
-    };
-    const spy = jest.spyOn(console, "info");
-
-    await supertest(testServer)
-      .post("/slack/commands")
-      .set(headers)
-      .send(payload);
-
-    expect(spy).toHaveBeenCalledTimes(2);
-  });
-
   it("POST /slack/commands should dispatch order command", async () => {
     const payload = {
       user_name: "user.name",

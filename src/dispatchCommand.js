@@ -135,7 +135,7 @@ export default async function dispatchCommand(
 	command: ShowOrderItemButtonsCommand
     | ShowOrderItemDialogCommand
     | AddOrderItemCommand,
-) {
+): {} {
   switch (command.type) {
     case CommandType.show_order_item_buttons:
       return orderResponse;

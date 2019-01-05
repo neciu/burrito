@@ -5,13 +5,12 @@ import koaRoute from "koa-route";
 import bodyParser from "koa-bodyparser";
 import validateSignature from "../validateSlackSignature";
 import { KoaCtx, KoaNext } from "../types";
-import dispatchCommand from "../dispatchCommand";
 import { handleActions } from "server/actions";
-import { CommandType } from "commands";
+import { handleSlashCommands } from "slashCommands";
 
 const server = new Koa();
 server.use(bodyParser());
-server.use(koaRoute.post("/slack/commands", handleCommands));
+server.use(koaRoute.post("/slack/commands", handleSlashCommands));
 server.use(koaRoute.post("/slack/actions", handleActions));
 if (process.env.NODE_ENV !== "test") {
   server.use(slackAuthenticator);
@@ -31,28 +30,6 @@ export async function slackAuthenticator(ctx: KoaCtx, next: typeof KoaNext) {
   } catch (error) {
     console.error(error);
     ctx.status = 403;
-  }
-}
-
-async function handleCommands(ctx) {
-  ctx.body = "Hello World";
-
-  console.info("Headers", ctx.request.headers);
-  console.info("Payload", ctx.request.body);
-
-  if (ctx.request.body) {
-    const {
-      user_name: userName,
-      command,
-      text,
-      response_url: responseUrl,
-    } = ctx.request.body;
-
-    if (command === "/burrito" && text === "order") {
-      ctx.body = await dispatchCommand({
-        type: CommandType.show_order_item_buttons,
-      });
-    }
   }
 }
 

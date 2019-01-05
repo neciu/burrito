@@ -7,8 +7,13 @@ declare export class KoaCtx {
   };
   request: {
     rawBody: string,
+    body: {
+      command?: string,
+      text?: string,
+    },
   };
   status: number;
+  body: {};
 }
 
 declare export function KoaNext(): void;
