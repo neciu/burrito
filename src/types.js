@@ -10,6 +10,7 @@ declare export class KoaCtx {
     body: {
       command?: string,
       text?: string,
+      user_id?: string,
     },
   };
   status: number;
