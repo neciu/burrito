@@ -8,12 +8,15 @@ import { getEventStore } from "EventStoreService";
 
 export const helpResponse = {
   text:
-    "It seems you'd use some help. Please take a look on the list of available commands below:\n- `/burrito order` will present you all current order options,\n- `/burrito help` displays this message.",
+    "It seems you'd use some help. Please take a look on the list of " +
+    "available commands below:\n- `/burrito order` will present you all " +
+    "current order options,\n- `/burrito help` displays this message.",
 };
 
 export const openNewOrderWrongOrMissingDateResponse = {
   text:
-    "Wrong or missing date. Try again with `/burrito open new order [yyyy-mm-dd]`.",
+    "Wrong or missing date. Try again with `/burrito open new order " +
+    "[yyyy-mm-dd]`.",
 };
 
 export function getNewOrderOkResponse(date: string): { text: string } {
