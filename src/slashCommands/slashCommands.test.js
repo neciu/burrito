@@ -127,3 +127,72 @@ describe("open new order command", () => {
     });
   });
 });
+
+describe("close order command", () => {
+  let testServer = undefined;
+
+  beforeAll(() => {
+    testServer = server.listen();
+  });
+
+  afterAll(() => {
+    testServer && testServer.close();
+  });
+
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
+  it("should append event then the order is already opened", async () => {
+    getEventStore().append({
+      type: "openNewOrder",
+      author: "U1337",
+      orderDate: "2019-01-01",
+    });
+    const payload = makePayload({ text: "close order 2019-01-01" });
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200);
+
+    const events = await getEventStore().getEvents({ type: "closeOrder" });
+    expect(events.length).toEqual(1);
+    expect(events[0]).toEqual({
+      type: "closeOrder",
+      author: "U1337",
+      orderDate: "2019-01-01",
+    });
+  });
+
+  it("should not append event then the order is not opened", async () => {
+    const payload = makePayload({ text: "close order 2019-01-01" });
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200);
+
+    const events = await getEventStore().getEvents({ type: "closeOrder" });
+    expect(events.length).toEqual(0);
+  });
+
+  it("should not append event then the order is already closed", async () => {
+    getEventStore().append({
+      type: "closeOrder",
+      author: "U1337",
+      orderDate: "2019-01-01",
+    });
+    const payload = makePayload({ text: "close order 2019-01-01" });
+    let events = await getEventStore().getEvents({ type: "closeOrder" });
+    expect(events.length).toEqual(1);
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200);
+
+    events = await getEventStore().getEvents({ type: "closeOrder" });
+    expect(events.length).toEqual(1);
+  });
+});

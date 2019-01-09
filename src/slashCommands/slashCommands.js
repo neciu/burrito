@@ -46,6 +46,13 @@ export default async function handleSlashCommands(ctx: KoaCtx) {
       text.startsWith("open new order")
     ) {
       ctx.body = await handleNewOrder(text, userId);
+    } else if (
+      command === "/burrito" &&
+      userId &&
+      text &&
+      text.startsWith("close order")
+    ) {
+      await handleCloseOrder(text, userId);
     } else {
       ctx.body = helpResponse;
     }
@@ -83,5 +90,23 @@ async function storeOpenNewOrderEvent(date: string, userId: string) {
     return getNewOrderOkResponse(date);
   } else {
     return getNewOrderDateCollidingResponse(date);
+  }
+}
+
+async function handleCloseOrder(command: string, userId: string) {
+  const date = command.replace("close order ", "");
+
+  const events = await getEventStore().getEvents({
+    type: "openNewOrder",
+    orderDate: date,
+  });
+
+  if (events.length === 1) {
+    await getEventStore().append({
+      type: "closeOrder",
+      author: userId,
+      orderDate: date,
+    });
+  } else {
   }
 }
