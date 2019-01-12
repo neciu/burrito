@@ -72,6 +72,7 @@ describe("open new order command", () => {
     text                                | expectedResponse
     ${"open new order"}                 | ${openNewOrderWrongOrMissingDateResponse}
     ${"open new order 2019-11-666"}     | ${openNewOrderWrongOrMissingDateResponse}
+    ${"open new order2019-11-11"}       | ${openNewOrderWrongOrMissingDateResponse}
     ${"open new order asas2019-11-01"}  | ${openNewOrderWrongOrMissingDateResponse}
     ${"open new order 2019-11-01 xaxs"} | ${openNewOrderWrongOrMissingDateResponse}
     ${"open new order 2019-11-01xaxs"}  | ${openNewOrderWrongOrMissingDateResponse}

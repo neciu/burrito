@@ -65,7 +65,7 @@ async function handleNewOrder(
   text: string,
   userId: string,
 ): Promise<{ text: string }> {
-  const unformattedDate = text.replace("open new order", "").trim();
+  const unformattedDate = text.replace("open new order ", "").trim();
   const date = DateTime.fromISO(unformattedDate);
 
   if (!date.isValid) {
