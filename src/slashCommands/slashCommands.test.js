@@ -9,7 +9,11 @@ import {
   helpResponse,
   openNewOrderWrongOrMissingDateResponse,
 } from "slashCommands/slashCommands";
-import { getEventStore, initializeEventStore } from "EventStoreService";
+import {
+  EventTypes,
+  getEventStore,
+  initializeEventStore,
+} from "EventStoreService";
 
 function makePayload(params) {
   return {
@@ -87,7 +91,9 @@ describe("open new order command", () => {
 
   it("should append the event when proper date is provided", async () => {
     const payload = makePayload({ text: "open new order 2019-01-01" });
-    let events = await getEventStore().getEvents({ type: "openNewOrder" });
+    let events = await getEventStore().getEvents({
+      type: EventTypes.openNewOrder,
+    });
     expect(events.length).toEqual(0);
 
     await supertest(testServer)
@@ -95,9 +101,9 @@ describe("open new order command", () => {
       .send(payload)
       .expect(200, getNewOrderOkResponse("2019-01-01"));
 
-    events = await getEventStore().getEvents({ type: "openNewOrder" });
+    events = await getEventStore().getEvents({ type: EventTypes.openNewOrder });
     expect(events[0]).toEqual({
-      type: "openNewOrder",
+      type: EventTypes.openNewOrder,
       author: "U1337",
       orderDate: "2019-01-01",
     });
@@ -105,12 +111,14 @@ describe("open new order command", () => {
 
   it("should not append the event when there is an existing event with the same date", async () => {
     getEventStore().append({
-      type: "openNewOrder",
+      type: EventTypes.openNewOrder,
       author: "lol",
       orderDate: "2019-01-01",
     });
     const payload = makePayload({ text: "open new order 2019-01-01" });
-    let events = await getEventStore().getEvents({ type: "openNewOrder" });
+    let events = await getEventStore().getEvents({
+      type: EventTypes.openNewOrder,
+    });
     expect(events.length).toEqual(1);
 
     await supertest(testServer)
@@ -118,10 +126,10 @@ describe("open new order command", () => {
       .send(payload)
       .expect(200, getNewOrderDateCollidingResponse("2019-01-01"));
 
-    events = await getEventStore().getEvents({ type: "openNewOrder" });
+    events = await getEventStore().getEvents({ type: EventTypes.openNewOrder });
     expect(events.length).toEqual(1);
     expect(events[0]).toEqual({
-      type: "openNewOrder",
+      type: EventTypes.openNewOrder,
       author: "lol",
       orderDate: "2019-01-01",
     });
@@ -145,7 +153,7 @@ describe("close order command", () => {
 
   it("should append event then the order is already opened", async () => {
     getEventStore().append({
-      type: "openNewOrder",
+      type: EventTypes.openNewOrder,
       author: "U1337",
       orderDate: "2019-01-01",
     });
@@ -156,10 +164,12 @@ describe("close order command", () => {
       .send(payload)
       .expect(200);
 
-    const events = await getEventStore().getEvents({ type: "closeOrder" });
+    const events = await getEventStore().getEvents({
+      type: EventTypes.closeOrder,
+    });
     expect(events.length).toEqual(1);
     expect(events[0]).toEqual({
-      type: "closeOrder",
+      type: EventTypes.closeOrder,
       author: "U1337",
       orderDate: "2019-01-01",
     });
@@ -173,18 +183,22 @@ describe("close order command", () => {
       .send(payload)
       .expect(200);
 
-    const events = await getEventStore().getEvents({ type: "closeOrder" });
+    const events = await getEventStore().getEvents({
+      type: EventTypes.closeOrder,
+    });
     expect(events.length).toEqual(0);
   });
 
   it("should not append event then the order is already closed", async () => {
     getEventStore().append({
-      type: "closeOrder",
+      type: EventTypes.closeOrder,
       author: "U1337",
       orderDate: "2019-01-01",
     });
     const payload = makePayload({ text: "close order 2019-01-01" });
-    let events = await getEventStore().getEvents({ type: "closeOrder" });
+    let events = await getEventStore().getEvents({
+      type: EventTypes.closeOrder,
+    });
     expect(events.length).toEqual(1);
 
     await supertest(testServer)
@@ -192,7 +206,7 @@ describe("close order command", () => {
       .send(payload)
       .expect(200);
 
-    events = await getEventStore().getEvents({ type: "closeOrder" });
+    events = await getEventStore().getEvents({ type: EventTypes.closeOrder });
     expect(events.length).toEqual(1);
   });
 });

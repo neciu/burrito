@@ -4,7 +4,7 @@ import dispatchCommand from "dispatchCommand";
 import { CommandType } from "commands";
 import { KoaCtx } from "types";
 import { DateTime } from "luxon";
-import { getEventStore } from "EventStoreService";
+import { EventTypes, getEventStore } from "EventStoreService";
 
 export const helpResponse = {
   text:
@@ -77,13 +77,13 @@ async function handleNewOrder(
 
 async function storeOpenNewOrderEvent(date: string, userId: string) {
   const events = await getEventStore().getEvents({
-    type: "openNewOrder",
+    type: EventTypes.openNewOrder,
     orderDate: date,
   });
 
   if (events.length === 0) {
     await getEventStore().append({
-      type: "openNewOrder",
+      type: EventTypes.openNewOrder,
       author: userId,
       orderDate: date,
     });
@@ -97,13 +97,13 @@ async function handleCloseOrder(command: string, userId: string) {
   const date = command.replace("close order ", "");
 
   const events = await getEventStore().getEvents({
-    type: "openNewOrder",
+    type: EventTypes.openNewOrder,
     orderDate: date,
   });
 
   if (events.length === 1) {
     await getEventStore().append({
-      type: "closeOrder",
+      type: EventTypes.closeOrder,
       author: userId,
       orderDate: date,
     });

@@ -43,3 +43,8 @@ export function initializeEventStore() {
 export function getEventStore() {
   return eventStore;
 }
+
+export const EventTypes = {
+  openNewOrder: "openNewOrder",
+  closeOrder: "closeOrder",
+};
