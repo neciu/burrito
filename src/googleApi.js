@@ -4,6 +4,7 @@ import { google } from "googleapis";
 
 export type GoogleApi = {
   sheetsAppend: (request: any) => Promise<any>,
+  sheetsGet: (request: any) => Promise<any>,
 };
 
 const api: GoogleApi = {
@@ -13,6 +14,23 @@ const api: GoogleApi = {
 
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.append({ ...request, auth }, function(
+        err,
+        response,
+      ) {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(response);
+        }
+      });
+    });
+  },
+  sheetsGet(request) {
+    const auth = getJwtAuth();
+    const sheets = getSheets(auth);
+
+    return new Promise((resolve, reject) => {
+      sheets.spreadsheets.values.get({ ...request, auth }, function(
         err,
         response,
       ) {

@@ -1,5 +1,7 @@
 // @flow strict
 
+import googleApi from "./googleApi";
+
 let eventStore;
 
 export function initializeEventStore() {
@@ -7,7 +9,7 @@ export function initializeEventStore() {
     let events = [];
 
     eventStore = {
-      getEvents: function getEvents(params: {}): Array<{}> {
+      getEvents: async function getEvents(params: {}): Promise<Array<{}>> {
         const paramKeys = Object.keys(params);
         return events.filter(e =>
           paramKeys.every(key => e[key] === params[key]),
@@ -15,6 +17,24 @@ export function initializeEventStore() {
       },
       append: function append(event: {}): void {
         events = events.concat(event);
+      },
+    };
+  } else {
+    eventStore = {
+      getEvents: async function getEvents(params: {}): Promise<Array<{}>> {
+        const request = {
+          spreadsheetId: process.env.GOOGLE_SHEET_ID,
+          range: "Class Data!A:XX",
+        };
+
+        const result = await googleApi.sheetsGet(request);
+        const events = result.data.values;
+        console.info({ events });
+
+        return [];
+      },
+      append: async function append(event: {}): Promise<void> {
+        // events = events.concat(event);
       },
     };
   }
