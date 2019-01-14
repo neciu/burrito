@@ -10,9 +10,10 @@ import {
   openNewOrderWrongOrMissingDateResponse,
 } from "slashCommands/slashCommands";
 import {
-  EventTypes,
+  CloseOrderEvent,
   getEventStore,
   initializeEventStore,
+  OpenNewOrderEvent,
 } from "EventStoreService";
 
 function makePayload(params) {
@@ -35,11 +36,14 @@ describe("order command", () => {
     testServer && testServer.close();
   });
 
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
   it.each`
-    text                          | expectedStatus | expectedResponse
-    ${"help"}                     | ${200}         | ${helpResponse}
-    ${"definitely wrong command"} | ${200}         | ${helpResponse}
-    ${"order"}                    | ${200}         | ${orderResponse}
+    text                          | expectedResponse
+    ${"help"}                     | ${helpResponse}
+    ${"definitely wrong command"} | ${helpResponse}
   `(
     "should return proper status code and response for $text",
     async ({ text, expectedStatus, expectedResponse }) => {
@@ -48,9 +52,46 @@ describe("order command", () => {
       await supertest(testServer)
         .post("/slack/commands")
         .send(payload)
-        .expect(expectedStatus, expectedResponse);
+        .expect(200, expectedResponse);
     },
   );
+
+  it("should return error then there is no order", async () => {
+    const events = await getEventStore().getStillOpenedOrdersOpenOrderEvents();
+    expect(events.length).toEqual(0);
+
+    const payload = makePayload({ text: "order" });
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, {
+        text: "There is no opened order. Ask somebody for help if needed.",
+      });
+  });
+
+  it("should return buttons when there is opened order", async () => {
+    await getEventStore().openOrder("U1337", "2019-01-01");
+    const payload = makePayload({ text: "order" });
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, orderResponse);
+  });
+
+  it("should return error if order is closed already", async () => {
+    await getEventStore().openOrder("U1337", "2019-01-01");
+    await getEventStore().closeOrder("U1337", "2019-01-01");
+    const payload = makePayload({ text: "order" });
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, {
+        text: "There is no opened order. Ask somebody for help if needed.",
+      });
+  });
 });
 
 describe("open new order command", () => {
@@ -92,9 +133,7 @@ describe("open new order command", () => {
 
   it("should append the event when proper date is provided", async () => {
     const payload = makePayload({ text: "open new order 2019-01-01" });
-    let events = await getEventStore().getEvents({
-      type: EventTypes.openNewOrder,
-    });
+    let events = await getEventStore().getStillOpenedOrdersOpenOrderEvents();
     expect(events.length).toEqual(0);
 
     await supertest(testServer)
@@ -102,24 +141,16 @@ describe("open new order command", () => {
       .send(payload)
       .expect(200, getNewOrderOkResponse("2019-01-01"));
 
-    events = await getEventStore().getEvents({ type: EventTypes.openNewOrder });
-    expect(events[0]).toEqual({
-      type: EventTypes.openNewOrder,
-      author: "U1337",
-      orderDate: "2019-01-01",
-    });
+    const event: OpenNewOrderEvent = (await getEventStore().getStillOpenedOrdersOpenOrderEvents())[0];
+    expect(event).toBeInstanceOf(OpenNewOrderEvent);
+    expect(event.author).toEqual("U1337");
+    expect(event.date).toEqual("2019-01-01");
   });
 
   it("should not append the event when there is an existing event with the same date", async () => {
-    getEventStore().append({
-      type: EventTypes.openNewOrder,
-      author: "lol",
-      orderDate: "2019-01-01",
-    });
+    await getEventStore().openOrder("lol", "2019-01-01");
     const payload = makePayload({ text: "open new order 2019-01-01" });
-    let events = await getEventStore().getEvents({
-      type: EventTypes.openNewOrder,
-    });
+    let events = await getEventStore().getStillOpenedOrdersOpenOrderEvents();
     expect(events.length).toEqual(1);
 
     await supertest(testServer)
@@ -127,13 +158,12 @@ describe("open new order command", () => {
       .send(payload)
       .expect(200, getNewOrderDateCollidingResponse("2019-01-01"));
 
-    events = await getEventStore().getEvents({ type: EventTypes.openNewOrder });
+    events = await getEventStore().getStillOpenedOrdersOpenOrderEvents();
     expect(events.length).toEqual(1);
-    expect(events[0]).toEqual({
-      type: EventTypes.openNewOrder,
-      author: "lol",
-      orderDate: "2019-01-01",
-    });
+    const event: OpenNewOrderEvent = events[0];
+    expect(event).toBeInstanceOf(OpenNewOrderEvent);
+    expect(event.author).toEqual("lol");
+    expect(event.date).toEqual("2019-01-01");
   });
 });
 
@@ -153,11 +183,7 @@ describe("close order command", () => {
   });
 
   it("should append event then the order is already opened", async () => {
-    getEventStore().append({
-      type: EventTypes.openNewOrder,
-      author: "U1337",
-      orderDate: "2019-01-01",
-    });
+    await getEventStore().openOrder("U1337", "2019-01-01");
     const payload = makePayload({ text: "close order 2019-01-01" });
 
     await supertest(testServer)
@@ -165,15 +191,12 @@ describe("close order command", () => {
       .send(payload)
       .expect(200);
 
-    const events = await getEventStore().getEvents({
-      type: EventTypes.closeOrder,
-    });
+    const events = await getEventStore().getCloseOrderEvents();
     expect(events.length).toEqual(1);
-    expect(events[0]).toEqual({
-      type: EventTypes.closeOrder,
-      author: "U1337",
-      orderDate: "2019-01-01",
-    });
+    const event: CloseOrderEvent = events[0];
+    expect(event).toBeInstanceOf(CloseOrderEvent);
+    expect(event.author).toEqual("U1337");
+    expect(event.date).toEqual("2019-01-01");
   });
 
   it("should not append event then the order is not opened", async () => {
@@ -184,22 +207,14 @@ describe("close order command", () => {
       .send(payload)
       .expect(200);
 
-    const events = await getEventStore().getEvents({
-      type: EventTypes.closeOrder,
-    });
+    const events = await getEventStore().getCloseOrderEvents();
     expect(events.length).toEqual(0);
   });
 
   it("should not append event then the order is already closed", async () => {
-    getEventStore().append({
-      type: EventTypes.closeOrder,
-      author: "U1337",
-      orderDate: "2019-01-01",
-    });
+    await getEventStore().closeOrder("U1337", "2019-01-01");
     const payload = makePayload({ text: "close order 2019-01-01" });
-    let events = await getEventStore().getEvents({
-      type: EventTypes.closeOrder,
-    });
+    let events = await getEventStore().getCloseOrderEvents();
     expect(events.length).toEqual(1);
 
     await supertest(testServer)
@@ -207,7 +222,7 @@ describe("close order command", () => {
       .send(payload)
       .expect(200);
 
-    events = await getEventStore().getEvents({ type: EventTypes.closeOrder });
+    events = await getEventStore().getCloseOrderEvents();
     expect(events.length).toEqual(1);
   });
 });

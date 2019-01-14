@@ -4,6 +4,7 @@ import server, { slackAuthenticator } from "./server";
 import validateSlackSignature from "../validateSlackSignature";
 import dispatchCommand from "../dispatchCommand";
 import { CommandType } from "commands";
+import { initializeEventStore } from "EventStoreService";
 
 jest.mock("validateSlackSignature");
 jest.mock("dispatchCommand");
@@ -21,6 +22,10 @@ describe("server", () => {
     console.info.mockRestore();
   });
 
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
   afterEach(() => {
     console.info.mockClear();
     dispatchCommand.mockRestore();
@@ -30,29 +35,6 @@ describe("server", () => {
     await supertest(testServer)
       .post("/slack/commands")
       .expect(200);
-  });
-
-  it("POST /slack/commands should dispatch order command", async () => {
-    const payload = {
-      user_name: "user.name",
-      command: "/burrito",
-      text: "order",
-      response_url: "https://hooks.slack.com/commands/XXXXYYYY/ZZZZ/AAAABBBB",
-    };
-    const command = {
-      type: CommandType.show_order_item_buttons,
-    };
-
-    dispatchCommand.mockResolvedValue({ text: "Response from dispatch" });
-
-    await supertest(testServer)
-      .post("/slack/commands")
-      .send(payload)
-      .expect(200, {
-        text: "Response from dispatch",
-      });
-
-    expect(dispatchCommand).toHaveBeenCalledWith(command);
   });
 });
 

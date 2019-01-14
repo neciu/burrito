@@ -4,7 +4,7 @@ import dispatchCommand from "dispatchCommand";
 import { CommandType } from "commands";
 import { KoaCtx } from "types";
 import { DateTime } from "luxon";
-import { EventTypes, getEventStore } from "EventStoreService";
+import { getEventStore } from "EventStoreService";
 
 export const helpResponse = {
   text:
@@ -36,9 +36,7 @@ export default async function handleSlashCommands(ctx: KoaCtx) {
     const { command, text, user_id: userId } = ctx.request.body;
 
     if (command === "/burrito" && text === "order") {
-      ctx.body = await dispatchCommand({
-        type: CommandType.show_order_item_buttons,
-      });
+      ctx.body = await handleOrder();
     } else if (
       command === "/burrito" &&
       userId &&
@@ -61,6 +59,20 @@ export default async function handleSlashCommands(ctx: KoaCtx) {
   ctx.status = 200;
 }
 
+async function handleOrder() {
+  const openEvents = await getEventStore().getStillOpenedOrdersOpenOrderEvents();
+
+  if (openEvents.length === 0) {
+    return {
+      text: "There is no opened order. Ask somebody for help if needed.",
+    };
+  } else {
+    return await dispatchCommand({
+      type: CommandType.show_order_item_buttons,
+    });
+  }
+}
+
 async function handleNewOrder(
   text: string,
   userId: string,
@@ -76,37 +88,23 @@ async function handleNewOrder(
 }
 
 async function storeOpenNewOrderEvent(date: string, userId: string) {
-  const events = await getEventStore().getEvents({
-    type: EventTypes.openNewOrder,
-    orderDate: date,
-  });
+  const event = await getEventStore().getOpenOrderEvent(date);
 
-  if (events.length === 0) {
-    await getEventStore().append({
-      type: EventTypes.openNewOrder,
-      author: userId,
-      orderDate: date,
-    });
-    return getNewOrderOkResponse(date);
-  } else {
+  if (event) {
     return getNewOrderDateCollidingResponse(date);
+  } else {
+    await getEventStore().openOrder(userId, date);
+    return getNewOrderOkResponse(date);
   }
 }
 
 async function handleCloseOrder(command: string, userId: string) {
   const date = command.replace("close order ", "");
 
-  const events = await getEventStore().getEvents({
-    type: EventTypes.openNewOrder,
-    orderDate: date,
-  });
+  const event = await getEventStore().getOpenOrderEvent(date);
 
-  if (events.length === 1) {
-    await getEventStore().append({
-      type: EventTypes.closeOrder,
-      author: userId,
-      orderDate: date,
-    });
+  if (event) {
+    await getEventStore().closeOrder(userId, date);
   } else {
   }
 }
