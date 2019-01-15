@@ -191,7 +191,16 @@ export function initializeEventStore() {
       }
 
       async append(event) {
-        console.log("append", event, event.toArray());
+        const request = {
+          spreadsheetId: process.env.GOOGLE_SHEET_ID,
+          range: "Class Data!A:A",
+          valueInputOption: "USER_ENTERED",
+          resource: {
+            values: [event.toArray()],
+          },
+        };
+
+        await googleApi.sheetsAppend(request);
       }
     }
     eventStore = new EventStore();
