@@ -6,7 +6,7 @@ import type { Dialog } from "./types";
 export const dialogUrl = "https://slack.com/api/dialog.open";
 
 export async function openDialog(triggerId: string, dialog: Dialog) {
-  return got.post(dialogUrl, {
+  return await got.post(dialogUrl, {
     json: true,
     headers: {
       Authorization: `Bearer ${process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN ||

@@ -93,28 +93,28 @@ let commentsElement = {
 export default {
   [OrderItemType.big_burrito]: {
     callbackId: CallbackId.add_order_item,
-    title: "Compose Your Big Burrito",
+    title: "Your Big Burrito",
     submitLabel: "Order",
     state: OrderItemType.big_burrito,
     elements: [fillingElement, sauceElement, drinkElement, commentsElement],
   },
   [OrderItemType.small_burrito]: {
     callbackId: CallbackId.add_order_item,
-    title: "Compose Your Small Burrito",
+    title: "Your Small Burrito",
     submitLabel: "Order",
     state: OrderItemType.small_burrito,
     elements: [fillingElement, sauceElement, commentsElement],
   },
   [OrderItemType.quesadilla]: {
     callbackId: CallbackId.add_order_item,
-    title: "Compose Your Quesadilla",
+    title: "Your Quesadilla",
     submitLabel: "Order",
     state: OrderItemType.quesadilla,
     elements: [fillingElement, sauceElement, commentsElement],
   },
   [OrderItemType.double_quesadilla]: {
     callbackId: CallbackId.add_order_item,
-    title: "Compose Your Double Quesadilla",
+    title: "Your Double Quesadilla",
     submitLabel: "Order",
     state: OrderItemType.double_quesadilla,
     elements: [fillingElement, sauceElement, drinkElement, commentsElement],
