@@ -1,5 +1,7 @@
 // @flow strict
 
+import uuidv4 from "uuid/v4";
+
 import googleApi from "./googleApi";
 
 interface EventStoreInterface {
@@ -13,14 +15,14 @@ interface EventStoreInterface {
 let eventStore: EventStoreInterface;
 
 class BaseEvent {
-  id: ?string;
-  timestamp: ?string;
+  id: string;
+  timestamp: string;
   version: number;
   author: string;
 
-  constructor(id: ?string, timestamp: ?string, author: string) {
-    this.id = id;
-    this.timestamp = timestamp;
+  constructor(author: string) {
+    this.id = uuidv4();
+    this.timestamp = new Date(Date.now()).toISOString();
     this.version = 1;
     this.author = author;
   }
@@ -32,7 +34,7 @@ class BaseEvent {
 
   static fromArray(array: Array<string>): BaseEvent {
     console.error("Unimplemented");
-    return new BaseEvent(null, null, "");
+    return new BaseEvent("");
   }
 }
 
@@ -40,15 +42,15 @@ export class OpenNewOrderEvent extends BaseEvent {
   static eventType: string;
   date: string;
 
-  constructor(id: ?string, timestamp: ?string, author: string, date: string) {
-    super(id, timestamp, author);
+  constructor(author: string, date: string) {
+    super(author);
     this.date = date;
   }
 
   toArray() {
     return [
-      this.id || "null",
-      this.timestamp || "null",
+      this.id,
+      this.timestamp,
       OpenNewOrderEvent.eventType,
       String(this.version),
       this.author,
@@ -58,7 +60,10 @@ export class OpenNewOrderEvent extends BaseEvent {
 
   static fromArray(array: Array<string>) {
     const [id, timestamp, eventType, version, author, date] = array;
-    return new OpenNewOrderEvent(id, timestamp, author, date);
+    const event = new OpenNewOrderEvent(author, date);
+    event.id = id;
+    event.timestamp = timestamp;
+    return event;
   }
 }
 OpenNewOrderEvent.eventType = "openOrder";
@@ -67,15 +72,15 @@ export class CloseOrderEvent extends BaseEvent {
   static eventType: string;
   date: string;
 
-  constructor(id: ?string, timestamp: ?string, author: string, date: string) {
-    super(id, timestamp, author);
+  constructor(author: string, date: string) {
+    super(author);
     this.date = date;
   }
 
   toArray() {
     return [
-      this.id || "null",
-      this.timestamp || "null",
+      this.id,
+      this.timestamp,
       CloseOrderEvent.eventType,
       String(this.version),
       this.author,
@@ -85,7 +90,10 @@ export class CloseOrderEvent extends BaseEvent {
 
   static fromArray(array: Array<string>) {
     const [id, timestamp, eventType, version, author, date] = array;
-    return new CloseOrderEvent(id, timestamp, author, date);
+    const event = new CloseOrderEvent(author, date);
+    event.id = id;
+    event.timestamp = timestamp;
+    return event;
   }
 }
 CloseOrderEvent.eventType = "closeOrder";
@@ -101,11 +109,11 @@ class BaseEventStore implements EventStoreInterface {
   }
 
   async openOrder(author: string, date: string) {
-    await this.append(new OpenNewOrderEvent(null, null, author, date));
+    await this.append(new OpenNewOrderEvent(author, date));
   }
 
   async closeOrder(author: string, date: string) {
-    await this.append(new CloseOrderEvent(null, null, author, date));
+    await this.append(new CloseOrderEvent(author, date));
   }
 
   async getStillOpenedOrdersOpenOrderEvents() {
@@ -130,18 +138,7 @@ class BaseEventStore implements EventStoreInterface {
 
   async getOpenOrderEvent(date: string) {
     const allEvents = await this.getEvents([OpenNewOrderEvent.eventType]);
-    const event = allEvents.find(e => e.date === date);
-
-    if (event) {
-      return new OpenNewOrderEvent(
-        event.id,
-        event.timestamp,
-        event.author,
-        event.date,
-      );
-    } else {
-      return undefined;
-    }
+    return allEvents.find(e => e.date === date);
   }
 }
 
