@@ -68,6 +68,7 @@ describe("POST /slack/actions", () => {
         callback_id: CallbackId.add_order_item,
         response_url: "response_url",
         user: {
+          id: "U1337",
           name: "Mr John Smith",
         },
         state: orderItemType,
@@ -81,7 +82,7 @@ describe("POST /slack/actions", () => {
       const command: AddOrderItemCommand = {
         type: CommandType.add_order_item,
         responseUrl: payload.response_url,
-        userName: payload.user.name,
+        userName: payload.user.id,
         item: {
           type: orderItemType,
           filling: payload.submission.filling,

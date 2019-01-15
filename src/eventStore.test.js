@@ -5,6 +5,7 @@ import * as eventStore from "./eventStore";
 import type { AddOrderItemCommand } from "commands";
 import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";
+import { getEventStore, initializeEventStore } from "EventStoreService";
 
 jest.mock("uuid/v4");
 
@@ -24,11 +25,15 @@ describe("appendEvent", () => {
     uuidv4.mockRestore();
   });
 
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
   it.each`
     userName           | itemType                           | filling         | sauce  | drink         | comments           | expectedValues
-    ${"mr.john.smith"} | ${OrderItemType.big_burrito}       | ${"beef"}       | ${"1"} | ${"lemonade"} | ${"I like tacos!"} | ${["mr.john.smith", OrderItemType.big_burrito, "beef", "1", "lemonade", "I like tacos!"]}
-    ${"admin1"}        | ${OrderItemType.quesadilla}        | ${"vegetarian"} | ${"4"} | ${undefined}  | ${""}              | ${["admin1", OrderItemType.quesadilla, "vegetarian", "4", "", ""]}
-    ${"admin2"}        | ${OrderItemType.double_quesadilla} | ${"pork"}       | ${"7"} | ${undefined}  | ${"I like tacos!"} | ${["admin2", OrderItemType.double_quesadilla, "pork", "7", "", "I like tacos!"]}
+    ${"mr.john.smith"} | ${OrderItemType.big_burrito}       | ${"beef"}       | ${"1"} | ${"lemonade"} | ${"I like tacos!"} | ${["mr.john.smith", "2019-01-01", OrderItemType.big_burrito, "beef", "1", "lemonade", "I like tacos!"]}
+    ${"admin1"}        | ${OrderItemType.quesadilla}        | ${"vegetarian"} | ${"4"} | ${undefined}  | ${""}              | ${["admin1", "2019-01-01", OrderItemType.quesadilla, "vegetarian", "4", "", ""]}
+    ${"admin2"}        | ${OrderItemType.double_quesadilla} | ${"pork"}       | ${"7"} | ${undefined}  | ${"I like tacos!"} | ${["admin2", "2019-01-01", OrderItemType.double_quesadilla, "pork", "7", "", "I like tacos!"]}
   `(
     "should handle AddOrderItemCommand with $userName $itemType $filling $sauce $drink $comments",
     async ({
@@ -54,6 +59,7 @@ describe("appendEvent", () => {
       };
       const mockedResult = { text: "errything is ok!" };
       const spy = jest.fn().mockResolvedValue(mockedResult);
+      await getEventStore().openOrder("U1337", "2019-01-01");
 
       const result = await eventStore.appendEvent(command, spy);
 

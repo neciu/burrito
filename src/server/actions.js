@@ -15,7 +15,7 @@ export async function handleActions(ctx) {
     await dispatchCommand({
       type: CommandType.add_order_item,
       responseUrl: payload.response_url,
-      userName: payload.user.name,
+      userName: payload.user.id,
       item: {
         type: payload.state,
         filling: payload.submission.filling,
