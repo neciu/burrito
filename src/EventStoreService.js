@@ -66,7 +66,7 @@ export class OpenNewOrderEvent extends BaseEvent {
     return event;
   }
 }
-OpenNewOrderEvent.eventType = "openOrder";
+OpenNewOrderEvent.eventType = "open_order";
 
 export class CloseOrderEvent extends BaseEvent {
   static eventType: string;
@@ -96,7 +96,7 @@ export class CloseOrderEvent extends BaseEvent {
     return event;
   }
 }
-CloseOrderEvent.eventType = "closeOrder";
+CloseOrderEvent.eventType = "close_order";
 
 class BaseEventStore implements EventStoreInterface {
   async getEvents(types: ?Array<string>): Promise<Array<any>> {
