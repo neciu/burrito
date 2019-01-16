@@ -1,8 +1,8 @@
 // @flow strict
 
-import { openDialog, respond } from "./slackApi";
-import type { Dialog } from "./types";
-import { appendEvent } from "./eventStore";
+import { openDialog, respond } from "slackApi";
+import type { Dialog } from "types";
+import { appendEvent } from "eventStore";
 import type {
   AddOrderItemCommand,
   ShowOrderItemButtonsCommand,
@@ -38,7 +38,7 @@ export const orderResponse = {
         },
         {
           name: "orderItem",
-          text: "Small quesadilla",
+          text: "Double Quesadilla",
           type: "button",
           value: OrderItemType.double_quesadilla,
         },

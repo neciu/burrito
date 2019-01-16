@@ -1,7 +1,7 @@
 // @flow strict
 
 import uuidv4 from "uuid/v4";
-import * as eventStore from "./eventStore";
+import * as eventStore from "eventStore";
 import type { AddOrderItemCommand } from "commands";
 import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";

@@ -1,7 +1,7 @@
 // @flow strict
 
 import got from "got";
-import type { Dialog } from "./types";
+import type { Dialog } from "types";
 
 export const dialogUrl = "https://slack.com/api/dialog.open";
 

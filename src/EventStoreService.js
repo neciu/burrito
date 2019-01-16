@@ -2,7 +2,7 @@
 
 import uuidv4 from "uuid/v4";
 
-import googleApi from "./googleApi";
+import googleApi from "googleApi";
 
 interface EventStoreInterface {
   openOrder(author: string, date: string): Promise<void>;

@@ -1,8 +1,8 @@
 // @flow strict
 
 import got from "got";
-import { getBurritoDialog } from "./dispatchCommand";
-import { dialogUrl, openDialog, respond } from "./slackApi";
+import { getBurritoDialog } from "dispatchCommand";
+import { dialogUrl, openDialog, respond } from "slackApi";
 
 const token = "token ohai!";
 process.env.SLACK_BOT_USER_OAUTH_ACCESS_TOKEN = token;

@@ -1,6 +1,6 @@
 // @flow strict
 
-import server from "server/server";
+import myserver from "myserver";
 import supertest from "supertest";
 import dispatchCommand from "dispatchCommand";
 import CallbackId from "CallbackId";
@@ -14,7 +14,7 @@ describe("POST /slack/actions", () => {
   let testServer = undefined;
 
   beforeAll(() => {
-    testServer = server.listen();
+    testServer = myserver.listen();
   });
 
   afterAll(() => {

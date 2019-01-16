@@ -1,4 +1,4 @@
-import validateSignature, { getSignature } from "./validateSlackSignature";
+import validateSignature, { getSignature } from "validateSlackSignature";
 
 const validParameters = {
   timestamp: "1544283133",

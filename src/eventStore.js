@@ -1,7 +1,7 @@
 // @flow strict
 
 import uuidv4 from "uuid/v4";
-import googleApi from "./googleApi";
+import googleApi from "googleApi";
 import type { AddOrderItemCommand } from "commands";
 import { CommandType } from "commands";
 import { getEventStore } from "EventStoreService";

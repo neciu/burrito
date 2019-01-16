@@ -1,7 +1,7 @@
 // @flow strict
 
 import supertest from "supertest";
-import server from "server";
+import myserver from "myserver";
 import { orderResponse } from "dispatchCommand";
 import {
   getNewOrderDateCollidingResponse,
@@ -29,7 +29,7 @@ describe("order command", () => {
   let testServer = undefined;
 
   beforeAll(() => {
-    testServer = server.listen();
+    testServer = myserver.listen();
   });
 
   afterAll(() => {
@@ -98,7 +98,7 @@ describe("open new order command", () => {
   let testServer = undefined;
 
   beforeAll(() => {
-    testServer = server.listen();
+    testServer = myserver.listen();
   });
 
   afterAll(() => {
@@ -171,7 +171,7 @@ describe("close order command", () => {
   let testServer = undefined;
 
   beforeAll(() => {
-    testServer = server.listen();
+    testServer = myserver.listen();
   });
 
   afterAll(() => {
@@ -231,7 +231,7 @@ describe("show order command", () => {
   let testServer = undefined;
 
   beforeAll(() => {
-    testServer = server.listen();
+    testServer = myserver.listen();
   });
 
   afterAll(() => {

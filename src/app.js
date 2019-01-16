@@ -1,10 +1,10 @@
 // @flow strict
 
-import checkEnvs from "./checkEnvs";
-import server from "./server";
+import checkEnvs from "checkEnvs";
+import myserver from "myserver";
 import { initializeEventStore } from "EventStoreService";
 
 checkEnvs();
 initializeEventStore();
 
-server.listen(process.env.PORT);
+myserver.listen(process.env.PORT);

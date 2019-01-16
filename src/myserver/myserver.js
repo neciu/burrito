@@ -3,18 +3,19 @@
 import Koa from "koa";
 import koaRoute from "koa-route";
 import bodyParser from "koa-bodyparser";
-import validateSignature from "../validateSlackSignature";
-import { KoaCtx, KoaNext } from "../types";
-import { handleActions } from "server/actions";
+import validateSignature from "validateSlackSignature";
+import { KoaCtx, KoaNext } from "types";
+import { handleActions } from "myserver/actions";
 import { handleSlashCommands } from "slashCommands";
 
-const server = new Koa();
-server.use(bodyParser());
-server.use(koaRoute.post("/slack/commands", handleSlashCommands));
-server.use(koaRoute.post("/slack/actions", handleActions));
+const myserver = new Koa();
+myserver.use(bodyParser());
 if (process.env.NODE_ENV !== "test") {
-  server.use(slackAuthenticator);
+  myserver.use(slackAuthenticator);
 }
+
+myserver.use(koaRoute.post("/slack/actions", handleActions));
+myserver.use(koaRoute.post("/slack/commands", handleSlashCommands));
 
 export async function slackAuthenticator(ctx: KoaCtx, next: typeof KoaNext) {
   const parameters = {
@@ -28,10 +29,10 @@ export async function slackAuthenticator(ctx: KoaCtx, next: typeof KoaNext) {
     validateSignature(parameters);
     await next();
   } catch (error) {
-  	console.error("Error in validating signature. More below.");
-  	console.error(error);
+    console.error("Error in validating signature. More below.");
+    console.error(error);
     ctx.status = 403;
   }
 }
 
-export default server;
+export default myserver;

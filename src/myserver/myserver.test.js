@@ -1,9 +1,8 @@
 import supertest from "supertest";
 
-import server, { slackAuthenticator } from "./server";
-import validateSlackSignature from "../validateSlackSignature";
-import dispatchCommand from "../dispatchCommand";
-import { CommandType } from "commands";
+import myserver, { slackAuthenticator } from "myserver/myserver";
+import validateSlackSignature from "validateSlackSignature";
+import dispatchCommand from "dispatchCommand";
 import { initializeEventStore } from "EventStoreService";
 
 jest.mock("validateSlackSignature");
@@ -13,7 +12,7 @@ describe("server", () => {
   let testServer = undefined;
 
   beforeAll(() => {
-    testServer = server.listen();
+    testServer = myserver.listen();
     jest.spyOn(console, "info").mockImplementation(() => {});
   });
 

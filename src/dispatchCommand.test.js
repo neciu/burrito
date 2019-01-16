@@ -1,8 +1,8 @@
 // @flow
 
-import dispatchCommand, { orderResponse } from "./dispatchCommand";
-import { openDialog, respond } from "./slackApi";
-import { appendEvent } from "./eventStore";
+import dispatchCommand, { orderResponse } from "dispatchCommand";
+import { openDialog, respond } from "slackApi";
+import { appendEvent } from "eventStore";
 import type {
   AddOrderItemCommand,
   ShowOrderItemButtonsCommand,
@@ -12,8 +12,8 @@ import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";
 import dialogs from "dialogs";
 
-jest.mock("./slackApi");
-jest.mock("./eventStore");
+jest.mock("slackApi");
+jest.mock("eventStore");
 
 describe("ShowOrderItemButtonsCommand", () => {
   it("should return proper buttons", async () => {

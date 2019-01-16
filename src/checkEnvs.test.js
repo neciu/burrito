@@ -1,4 +1,4 @@
-import { _checkEnvs } from "./checkEnvs";
+import { _checkEnvs } from "checkEnvs";
 
 it("should throw an error when there is any missing env", () => {
   delete process.env.required;
