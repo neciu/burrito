@@ -7,10 +7,10 @@ import { DateTime } from "luxon";
 import { getEventStore } from "EventStoreService";
 
 export const helpResponse = {
-  text:
-    "It seems you'd use some help. Please take a look on the list of " +
-    "available commands below:\n- `/burrito order` will present you all " +
-    "current order options,\n- `/burrito help` displays this message.",
+  text: `It seems you'd use some help. Please take a look on the list of available commands below:
+- \`/burrito order\` will present you all current order options,
+- \`/burrito show order\` will list all order items for current order,
+- \`/burrito help\` displays this message.`,
 };
 
 export const openNewOrderWrongOrMissingDateResponse = {
@@ -51,6 +51,13 @@ export default async function handleSlashCommands(ctx: KoaCtx) {
       text.startsWith("close order")
     ) {
       await handleCloseOrder(text, userId);
+    } else if (
+      command === "/burrito" &&
+      userId &&
+      text &&
+      text.startsWith("show order")
+    ) {
+      ctx.body = await handleShowOrder(text);
     } else {
       ctx.body = helpResponse;
     }
@@ -106,5 +113,29 @@ async function handleCloseOrder(command: string, userId: string) {
   if (event) {
     await getEventStore().closeOrder(userId, date);
   } else {
+  }
+}
+
+async function handleShowOrder(command: string) {
+  const openEvents = await getEventStore().getStillOpenedOrdersOpenOrderEvents();
+
+  if (openEvents.length === 0) {
+    return {
+      text: "There is no opened order. Ask somebody for help if needed.",
+    };
+  } else {
+    const orderDate = openEvents[0].date;
+    const items = await getEventStore().getAddOrderItemEvents(orderDate);
+    return {
+      text: `Items of the current order (${orderDate}):
+${items
+        .map(
+          (item, index) =>
+            `${index + 1}. <@${item.author}>, ${item.type}, ${item.filling}, ${
+              item.sauce
+            }, ${item.drink || ""}, ${item.comments || ""}`,
+        )
+        .join("\n")}`,
+    };
   }
 }

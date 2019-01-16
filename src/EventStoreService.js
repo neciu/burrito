@@ -7,9 +7,19 @@ import googleApi from "./googleApi";
 interface EventStoreInterface {
   openOrder(author: string, date: string): Promise<void>;
   closeOrder(author: string, date: string): Promise<void>;
+  addOrderItem(
+    author: string,
+    orderDate: string,
+    type: string,
+    filling: string,
+    sauce: string,
+    drink: ?string,
+    comments: string,
+  ): Promise<void>;
   getStillOpenedOrdersOpenOrderEvents(): Promise<Array<OpenNewOrderEvent>>;
   getCloseOrderEvents(): Promise<Array<CloseOrderEvent>>;
   getOpenOrderEvent(date: string): Promise<?OpenNewOrderEvent>;
+  getAddOrderItemEvents(date: string): Promise<Array<AddOrderItemEvent>>;
 }
 
 let eventStore: EventStoreInterface;
@@ -98,6 +108,79 @@ export class CloseOrderEvent extends BaseEvent {
 }
 CloseOrderEvent.eventType = "close_order";
 
+export class AddOrderItemEvent extends BaseEvent {
+  static eventType: string;
+  orderDate: string;
+  type: string;
+  filling: string;
+  sauce: string;
+  drink: ?string;
+  comments: string;
+
+  constructor(
+    author: string,
+    orderDate: string,
+    type: string,
+    filling: string,
+    sauce: string,
+    drink: ?string,
+    comments: string,
+  ) {
+    super(author);
+    this.orderDate = orderDate;
+    this.type = type;
+    this.filling = filling;
+    this.sauce = sauce;
+    this.drink = drink;
+    this.comments = comments;
+  }
+
+  toArray() {
+    return [
+      this.id,
+      this.timestamp,
+      AddOrderItemEvent.eventType,
+      String(this.version),
+      this.author,
+      this.orderDate,
+      this.type,
+      this.filling,
+      this.sauce,
+      this.drink || "",
+      this.comments,
+    ];
+  }
+
+  static fromArray(array: Array<string>) {
+    const [
+      id,
+      timestamp,
+      eventType,
+      version,
+      author,
+      orderDate,
+      type,
+      filling,
+      sauce,
+      drink,
+      comments,
+    ] = array;
+    const event = new AddOrderItemEvent(
+      author,
+      orderDate,
+      type,
+      filling,
+      sauce,
+      drink,
+      comments,
+    );
+    event.id = id;
+    event.timestamp = timestamp;
+    return event;
+  }
+}
+AddOrderItemEvent.eventType = "add_order_item";
+
 class BaseEventStore implements EventStoreInterface {
   async getEvents(types: ?Array<string>): Promise<Array<any>> {
     console.error("Unimplemented");
@@ -114,6 +197,20 @@ class BaseEventStore implements EventStoreInterface {
 
   async closeOrder(author: string, date: string) {
     await this.append(new CloseOrderEvent(author, date));
+  }
+
+  async addOrderItem(author, orderDate, type, kind, sauce, drink, comments) {
+    await this.append(
+      new AddOrderItemEvent(
+        author,
+        orderDate,
+        type,
+        kind,
+        sauce,
+        drink,
+        comments,
+      ),
+    );
   }
 
   async getStillOpenedOrdersOpenOrderEvents() {
@@ -140,6 +237,13 @@ class BaseEventStore implements EventStoreInterface {
     const allEvents = await this.getEvents([OpenNewOrderEvent.eventType]);
     return allEvents.find(e => e.date === date);
   }
+
+  async getAddOrderItemEvents(date: string) {
+    const allEvents: Array<AddOrderItemEvent> = await this.getEvents([
+      AddOrderItemEvent.eventType,
+    ]);
+    return allEvents.filter(e => e.orderDate === date);
+  }
 }
 
 export function initializeEventStore() {
@@ -154,6 +258,7 @@ export function initializeEventStore() {
         const typeToBuilder = {
           [OpenNewOrderEvent.eventType]: OpenNewOrderEvent.fromArray,
           [CloseOrderEvent.eventType]: CloseOrderEvent.fromArray,
+          [AddOrderItemEvent.eventType]: AddOrderItemEvent.fromArray,
         };
 
         return filteredEvents.map(e => typeToBuilder[e[2]](e));
@@ -182,6 +287,7 @@ export function initializeEventStore() {
         const typeToBuilder = {
           [OpenNewOrderEvent.eventType]: OpenNewOrderEvent.fromArray,
           [CloseOrderEvent.eventType]: CloseOrderEvent.fromArray,
+          [AddOrderItemEvent.eventType]: AddOrderItemEvent.fromArray,
         };
 
         return filteredEvents.map(e => typeToBuilder[e[2]](e));

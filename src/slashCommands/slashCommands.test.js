@@ -226,3 +226,60 @@ describe("close order command", () => {
     expect(events.length).toEqual(1);
   });
 });
+
+describe("show order command", () => {
+  let testServer = undefined;
+
+  beforeAll(() => {
+    testServer = server.listen();
+  });
+
+  afterAll(() => {
+    testServer && testServer.close();
+  });
+
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
+  it("should display message informing that there is no opened order", async () => {
+    const payload = makePayload({ text: "show order" });
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, {
+        text: "There is no opened order. Ask somebody for help if needed.",
+      });
+  });
+
+  it("should display message with all order items in current order", async () => {
+    const author = "U1337";
+    const date = "2019-01-01";
+    const type = "big_burrito";
+    const filling = "pork";
+    const sauce = "7";
+    const drink = "mangolade";
+    const comments = "This is a short comment.";
+
+    await getEventStore().openOrder(author, date);
+    await getEventStore().addOrderItem(
+      author,
+      date,
+      type,
+      filling,
+      sauce,
+      drink,
+      comments,
+    );
+    const payload = makePayload({ text: "show order" });
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, {
+        text: `Items of the current order (${date}):
+1. <@${author}>, ${type}, ${filling}, ${sauce}, ${drink}, ${comments}`,
+      });
+  });
+});
