@@ -21,7 +21,7 @@ function listMajors(auth) {
   sheets.spreadsheets.values.get(
     {
       spreadsheetId: process.env.GOOGLE_SHEET_ID,
-      range: "Class Data!A2:E",
+      range: "Event Log!A2:E",
     },
     (err, res) => {
       if (err) return console.log("The API returned an error: " + err);
@@ -40,7 +40,7 @@ function listMajors(auth) {
 
   const request = {
     spreadsheetId: process.env.GOOGLE_SHEET_ID, // TODO: Update placeholder value.
-    range: "Class Data!A33:E",
+    range: "Event Log!A33:E",
     valueInputOption: "USER_ENTERED",
     resource: {
       values: [["Void", "Canvas", "Website"], ["Paul", "Shan", "Human"]],

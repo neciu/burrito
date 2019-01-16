@@ -275,11 +275,11 @@ export function initializeEventStore() {
       async getEvents(types) {
         const request = {
           spreadsheetId: process.env.GOOGLE_SHEET_ID,
-          range: "Class Data!A:XX",
+          range: "Event Log!A:XX",
         };
 
         const result = await googleApi.sheetsGet(request);
-        const events = result.data.values;
+        const events = result.data.values || [];
 
         const filteredEvents = types
           ? events.filter(e => types.includes(e[2]))
@@ -296,7 +296,7 @@ export function initializeEventStore() {
       async append(event) {
         const request = {
           spreadsheetId: process.env.GOOGLE_SHEET_ID,
-          range: "Class Data!A:A",
+          range: "Event Log!A:A",
           valueInputOption: "USER_ENTERED",
           resource: {
             values: [event.toArray()],
