@@ -28,7 +28,8 @@ export async function slackAuthenticator(ctx: KoaCtx, next: typeof KoaNext) {
     validateSignature(parameters);
     await next();
   } catch (error) {
-    console.error(error);
+  	console.error("Error in validating signature. More below.");
+  	console.error(error);
     ctx.status = 403;
   }
 }
