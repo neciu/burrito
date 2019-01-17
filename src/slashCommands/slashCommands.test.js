@@ -283,3 +283,38 @@ describe("show order command", () => {
       });
   });
 });
+
+describe("get sms command", () => {
+  let testServer = undefined;
+
+  beforeAll(() => {
+    testServer = myserver.listen();
+  });
+
+  afterAll(() => {
+    testServer && testServer.close();
+  });
+
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
+  it.each`
+    text                    | expectedResponse
+    ${"get sms"}            | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
+    ${"get sms2019-01-01"}  | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
+    ${"get sms 201-01-01"}  | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
+    ${"get sms 2019-0x-01"} | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
+    ${"get sms 2019-01-01"} | ${{ text: "No order for specified date: `2019-01-01`." }}
+  `(
+    "should return proper response $text",
+    async ({ text, expectedResponse }) => {
+      const payload = makePayload({ text });
+
+      await supertest(testServer)
+        .post("/slack/commands")
+        .send(payload)
+        .expect(200, expectedResponse);
+    },
+  );
+});

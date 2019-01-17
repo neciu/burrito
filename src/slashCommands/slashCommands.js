@@ -58,6 +58,13 @@ export default async function handleSlashCommands(ctx: KoaCtx) {
       text.startsWith("show order")
     ) {
       ctx.body = await handleShowOrder(text);
+    } else if (
+      command === "/burrito" &&
+      userId &&
+      text &&
+      text.startsWith("get sms")
+    ) {
+      ctx.body = await handleGetSms(text);
     } else {
       ctx.body = helpResponse;
     }
@@ -138,4 +145,26 @@ ${items
         .join("\n")}`,
     };
   }
+}
+
+async function handleGetSms(command: string) {
+  const date = extractDateFromCommand("get sms", command);
+
+  if (date) {
+    return { text: `No order for specified date: \`${date}\`.` };
+  } else {
+    return {
+      text:
+        "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`.",
+    };
+  }
+}
+
+function extractDateFromCommand(
+  commandPrefix: string,
+  command: string,
+): ?string {
+  const dateCandidate = command.replace(commandPrefix + " ", "").trim();
+  const date = DateTime.fromISO(dateCandidate);
+  return date.isValid ? date.toISODate() : undefined;
 }
