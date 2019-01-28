@@ -33,3 +33,7 @@ export type Dialog = {
     }>,
   }>,
 };
+
+export type FillingOptions = "beef" | "pork" | "chicken" | "vegetables";
+
+export type DrinkOptions = "mangolade" | "lemonade";

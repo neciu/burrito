@@ -1,6 +1,7 @@
 // @flow strict
 
 import OrderItemType from "OrderItemType";
+import type { DrinkOptions, FillingOptions } from "types";
 
 export class Order {
   id: string;
@@ -28,17 +29,17 @@ export class Order {
 export class OrderItem {
   id: string;
   type: $Keys<typeof OrderItemType>;
-  filling: string;
+  filling: FillingOptions;
   sauce: string;
-  drink: ?string;
+  drink: ?DrinkOptions;
   comments: string;
 
   constructor(
     id: string,
     type: $Keys<typeof OrderItemType>,
-    filling: string,
+    filling: FillingOptions,
     sauce: string,
-    drink: ?string,
+    drink: ?DrinkOptions,
     comments: string,
   ) {
     this.id = id;
@@ -49,12 +50,16 @@ export class OrderItem {
     this.comments = comments;
   }
 
-  toSmsString(): string {
-    if (this.type === OrderItemType.big_burrito) {
-      return "D. burrito, wół, 4, mango.";
-    } else {
-      return "M. burrito, kura, 6.";
-    }
+  toSmsName(): string {
+    return [
+      getTypeName(this.type),
+      getFillingName(this.filling),
+      this.sauce,
+      getDrinkName(this.drink),
+    ]
+      .filter(item => !!item)
+      .join(", ")
+      .concat(".");
   }
 
   getPrice(): number {
@@ -68,4 +73,31 @@ export class OrderItem {
       return 1530;
     }
   }
+}
+
+function getTypeName(type: $Keys<typeof OrderItemType>): string {
+  return {
+    [OrderItemType.big_burrito]: "D. burrito",
+    [OrderItemType.small_burrito]: "M. burrito",
+    [OrderItemType.double_quesadilla]: "D. quesadilla",
+    [OrderItemType.quesadilla]: "M. quesadilla",
+  }[type];
+}
+
+function getFillingName(filling: FillingOptions): string {
+  return {
+    beef: "wół",
+    chicken: "kura",
+    pork: "wieprz",
+    vegetables: "wege",
+  }[filling];
+}
+
+function getDrinkName(drink: ?DrinkOptions): ?string {
+  return drink
+    ? {
+        mangolade: "mango",
+        lemonade: "lemon",
+      }[drink]
+    : undefined;
 }

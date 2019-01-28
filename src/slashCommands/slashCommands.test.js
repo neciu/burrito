@@ -381,4 +381,27 @@ describe("get sms command", () => {
       });
     });
   });
+
+  describe("getSms", () => {
+    it.each`
+      type                               | filling         | sauce  | drink          | expectedText
+      ${OrderItemType.big_burrito}       | ${"beef"}       | ${"1"} | ${"mangolade"} | ${"1. D. burrito, wół, 1, mango."}
+      ${OrderItemType.big_burrito}       | ${"pork"}       | ${"2"} | ${"lemonade"}  | ${"1. D. burrito, wieprz, 2, lemon."}
+      ${OrderItemType.small_burrito}     | ${"chicken"}    | ${"3"} | ${undefined}   | ${"1. M. burrito, kura, 3."}
+      ${OrderItemType.double_quesadilla} | ${"vegetables"} | ${"4"} | ${"mangolade"} | ${"1. D. quesadilla, wege, 4, mango."}
+      ${OrderItemType.double_quesadilla} | ${"beef"}       | ${"5"} | ${"lemonade"}  | ${"1. D. quesadilla, wół, 5, lemon."}
+      ${OrderItemType.quesadilla}        | ${"pork"}       | ${"6"} | ${undefined}   | ${"1. M. quesadilla, wieprz, 6."}
+      ${OrderItemType.quesadilla}        | ${"chicken"}    | ${"7"} | ${undefined}   | ${"1. M. quesadilla, kura, 7."}
+    `(
+      "should render item name properly $type $filling $sauce $drink",
+      ({ type, filling, sauce, drink, expectedText }) => {
+        const item = new OrderItem("", type, filling, sauce, drink, "");
+        const order = new Order("", "", true, [item]);
+
+        const response = handleGetSms.responses.getSms(order);
+
+        expect(response.text).toContain(expectedText);
+      },
+    );
+  });
 });

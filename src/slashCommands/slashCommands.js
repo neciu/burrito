@@ -176,7 +176,7 @@ handleGetSms.responses = {
     text: fillTemplate(process.env.SMS_TEMPLATE, {
       date: order.date,
       items: order.items
-        .map((item, index) => `${index + 1}. ${item.toSmsString()}`)
+        .map((item, index) => `${index + 1}. ${item.toSmsName()}`)
         .join("\n"),
       price: String(order.getPrice() / 100).replace(".", ","),
     }),
