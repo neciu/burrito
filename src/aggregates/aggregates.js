@@ -66,7 +66,7 @@ export class OrderItem {
     if (this.type === OrderItemType.big_burrito) {
       return 1710;
     } else if (this.type === OrderItemType.small_burrito) {
-      return 1410;
+      return 1440;
     } else if (this.type === OrderItemType.double_quesadilla) {
       return 2160;
     } else {
