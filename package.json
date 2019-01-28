@@ -40,6 +40,7 @@
     "start:dev": "NODE_PATH=./build/ node  -r dotenv/config build/app.js"
   },
   "dependencies": {
+    "es6-dynamic-template": "1.0.5",
     "googleapis": "27",
     "got": "9.4.0",
     "koa": "2.6.2",

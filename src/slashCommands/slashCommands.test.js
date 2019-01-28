@@ -1,11 +1,13 @@
 // @flow strict
 
 import supertest from "supertest";
+import fillTemplate from "es6-dynamic-template";
 import myserver from "myserver";
 import { orderResponse } from "dispatchCommand";
 import {
   getNewOrderDateCollidingResponse,
   getNewOrderOkResponse,
+  handleGetSms,
   helpResponse,
   openNewOrderWrongOrMissingDateResponse,
 } from "slashCommands/slashCommands";
@@ -15,6 +17,8 @@ import {
   initializeEventStore,
   OpenNewOrderEvent,
 } from "EventStoreService";
+import { Order, OrderItem } from "aggregates/aggregates";
+import OrderItemType from "OrderItemType";
 
 function makePayload(params) {
   return {
@@ -296,16 +300,17 @@ describe("get sms command", () => {
   });
 
   beforeEach(() => {
+    process.env.SMS_TEMPLATE = "${date}\n\n${items}\n\n${price}";
     initializeEventStore();
   });
 
   it.each`
     text                    | expectedResponse
-    ${"get sms"}            | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
-    ${"get sms2019-01-01"}  | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
-    ${"get sms 201-01-01"}  | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
-    ${"get sms 2019-0x-01"} | ${{ text: "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`." }}
-    ${"get sms 2019-01-01"} | ${{ text: "No order for specified date: `2019-01-01`." }}
+    ${"get sms"}            | ${handleGetSms.responses.missingOrWrongDate()}
+    ${"get sms2019-01-01"}  | ${handleGetSms.responses.missingOrWrongDate()}
+    ${"get sms 201-01-01"}  | ${handleGetSms.responses.missingOrWrongDate()}
+    ${"get sms 2019-0x-01"} | ${handleGetSms.responses.missingOrWrongDate()}
+    ${"get sms 2019-01-01"} | ${handleGetSms.responses.noOrder("2019-01-01")}
   `(
     "should return proper response $text",
     async ({ text, expectedResponse }) => {
@@ -317,4 +322,63 @@ describe("get sms command", () => {
         .expect(200, expectedResponse);
     },
   );
+
+  describe("getSms response", () => {
+    it("should handle one item", async () => {
+      const date = "2019-01-01";
+      const items = [
+        new OrderItem(
+          "id",
+          OrderItemType.big_burrito,
+          "beef",
+          "4",
+          "mangolade",
+          "short comment",
+        ),
+      ];
+      const order = new Order("id", date, true, items);
+
+      const response = handleGetSms.responses.getSms(order);
+
+      const expectedText = fillTemplate(process.env.SMS_TEMPLATE, {
+        date,
+        items: "1. D. burrito, wół, 4, mango.",
+        price: "24,3",
+      });
+      expect(response).toEqual({ text: expectedText });
+    });
+
+    it("should handle two items", async () => {
+      const date = "2019-01-02";
+      const items = [
+        new OrderItem(
+          "id",
+          OrderItemType.big_burrito,
+          "beef",
+          "4",
+          "mangolade",
+          "short comment",
+        ),
+        new OrderItem(
+          "id",
+          OrderItemType.small_burrito,
+          "chicken",
+          "6",
+          undefined,
+          "short comment",
+        ),
+      ];
+      const order = new Order("id", date, true, items);
+
+      const response = handleGetSms.responses.getSms(order);
+
+      expect(response).toEqual({
+        text: fillTemplate(process.env.SMS_TEMPLATE, {
+          date,
+          items: "1. D. burrito, wół, 4, mango.\n2. M. burrito, kura, 6.",
+          price: "38,4",
+        }),
+      });
+    });
+  });
 });

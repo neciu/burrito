@@ -7,6 +7,7 @@ const required_envs = [
   "GOOGLE_ACCOUNT_KEY",
   "GOOGLE_ACCOUNT_EMAIL",
   "GOOGLE_SHEET_ID",
+  "SMS_TEMPLATE",
 ];
 
 export function _checkEnvs(envs: Array<string>): void {

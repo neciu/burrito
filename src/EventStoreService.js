@@ -3,6 +3,7 @@
 import uuidv4 from "uuid/v4";
 
 import googleApi from "googleApi";
+import { Order } from "aggregates/aggregates";
 
 interface EventStoreInterface {
   openOrder(author: string, date: string): Promise<void>;
@@ -20,6 +21,8 @@ interface EventStoreInterface {
   getCloseOrderEvents(): Promise<Array<CloseOrderEvent>>;
   getOpenOrderEvent(date: string): Promise<?OpenNewOrderEvent>;
   getAddOrderItemEvents(date: string): Promise<Array<AddOrderItemEvent>>;
+
+  getOrder(date: string): Promise<?Order>;
 }
 
 let eventStore: EventStoreInterface;
@@ -243,6 +246,29 @@ class BaseEventStore implements EventStoreInterface {
       AddOrderItemEvent.eventType,
     ]);
     return allEvents.filter(e => e.orderDate === date);
+  }
+
+  async getOrder(date) {
+    const events = await this.getEvents([
+      OpenNewOrderEvent.eventType,
+      CloseOrderEvent.eventType,
+    ]);
+    const openEvents: Array<OpenNewOrderEvent> = events.filter(
+      e => e instanceof OpenNewOrderEvent,
+    );
+    const closeEvents: Array<CloseOrderEvent> = events.filter(
+      e => e instanceof CloseOrderEvent,
+    );
+
+    const openEvent = openEvents.find(e => e.date === date);
+    const closeEvent = closeEvents.find(e => e.date === date);
+
+    if (openEvent) {
+      const isClosed = !!closeEvent;
+      return new Order(openEvent.id, date, isClosed, []);
+    } else {
+      return undefined;
+    }
   }
 }
 

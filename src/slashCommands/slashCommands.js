@@ -5,6 +5,8 @@ import { CommandType } from "commands";
 import { KoaCtx } from "types";
 import { DateTime } from "luxon";
 import { getEventStore } from "EventStoreService";
+import { Order } from "aggregates/aggregates";
+import fillTemplate from "es6-dynamic-template";
 
 export const helpResponse = {
   text: `It seems you'd use some help. Please take a look on the list of available commands below:
@@ -147,18 +149,39 @@ ${items
   }
 }
 
-async function handleGetSms(command: string) {
+export async function handleGetSms(command: string) {
   const date = extractDateFromCommand("get sms", command);
 
   if (date) {
-    return { text: `No order for specified date: \`${date}\`.` };
+    const order = await getEventStore().getOrder(date);
+    if (order) {
+      return handleGetSms.responses.getSms(order);
+    } else {
+      return handleGetSms.responses.noOrder(date);
+    }
   } else {
-    return {
-      text:
-        "Missing or wrong date provided. Use `/burrito get sms yyyy-mm-dd`.",
-    };
+    return handleGetSms.responses.missingOrWrongDate();
   }
 }
+
+handleGetSms.responses = {
+  noOrder: (date: string) => ({
+    text: `No order for specified date: \`${date}\`.`,
+  }),
+  missingOrWrongDate: () => ({
+    text:
+      "Missing or wrong date provided. Use `/burrito get sms [yyyy-mm-dd]`.",
+  }),
+  getSms: (order: Order) => ({
+    text: fillTemplate(process.env.SMS_TEMPLATE, {
+      date: order.date,
+      items: order.items
+        .map((item, index) => `${index + 1}. ${item.toSmsString()}`)
+        .join("\n"),
+      price: String(order.getPrice() / 100).replace(".", ","),
+    }),
+  }),
+};
 
 function extractDateFromCommand(
   commandPrefix: string,
