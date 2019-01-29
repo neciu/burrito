@@ -376,7 +376,7 @@ describe("get sms command", () => {
         text: fillTemplate(process.env.SMS_TEMPLATE, {
           date,
           items: "1. D. burrito, wół, 4, mango.\n2. M. burrito, kura, 6.",
-          price: "38,4",
+          price: "38,7",
         }),
       });
     });
@@ -403,5 +403,115 @@ describe("get sms command", () => {
         expect(response.text).toContain(expectedText);
       },
     );
+
+    it("should sort items by type", () => {
+      const items = [
+        new OrderItem(
+          "",
+          OrderItemType.double_quesadilla,
+          "beef",
+          "1",
+          "mangolade",
+          "",
+        ),
+        new OrderItem("", OrderItemType.quesadilla, "beef", "1", undefined, ""),
+        new OrderItem(
+          "",
+          OrderItemType.big_burrito,
+          "beef",
+          "1",
+          "mangolade",
+          "",
+        ),
+        new OrderItem(
+          "",
+          OrderItemType.small_burrito,
+          "beef",
+          "1",
+          undefined,
+          "",
+        ),
+      ];
+      const order = new Order("", "", true, items);
+
+      const response = handleGetSms.responses.getSms(order);
+
+      const expectedText = `
+1. D. burrito, wół, 1, mango.
+2. M. burrito, wół, 1.
+3. D. quesadilla, wół, 1, mango.
+4. M. quesadilla, wół, 1.
+`.trim();
+      expect(response.text).toContain(expectedText);
+    });
+
+    it("should sort items by filling", () => {
+      const type = OrderItemType.quesadilla;
+      const items = [
+        new OrderItem("", type, "chicken", "1", undefined, ""),
+        new OrderItem("", type, "vegetables", "1", undefined, ""),
+        new OrderItem("", type, "pork", "1", undefined, ""),
+        new OrderItem("", type, "beef", "1", undefined, ""),
+      ];
+      const order = new Order("", "", true, items);
+
+      const response = handleGetSms.responses.getSms(order);
+
+      const expectedText = `
+1. M. quesadilla, wół, 1.
+2. M. quesadilla, wieprz, 1.
+3. M. quesadilla, kura, 1.
+4. M. quesadilla, wege, 1.
+`.trim();
+      expect(response.text).toContain(expectedText);
+    });
+
+    it("should sort items by sauce", () => {
+      const type = OrderItemType.quesadilla;
+      const items = [
+        new OrderItem("", type, "pork", "3", undefined, ""),
+        new OrderItem("", type, "pork", "2", undefined, ""),
+        new OrderItem("", type, "pork", "6", undefined, ""),
+        new OrderItem("", type, "pork", "7", undefined, ""),
+        new OrderItem("", type, "pork", "1", undefined, ""),
+        new OrderItem("", type, "pork", "5", undefined, ""),
+        new OrderItem("", type, "pork", "4", undefined, ""),
+      ];
+      const order = new Order("", "", true, items);
+
+      const response = handleGetSms.responses.getSms(order);
+
+      const expectedText = `
+1. M. quesadilla, wieprz, 1.
+2. M. quesadilla, wieprz, 2.
+3. M. quesadilla, wieprz, 3.
+4. M. quesadilla, wieprz, 4.
+5. M. quesadilla, wieprz, 5.
+6. M. quesadilla, wieprz, 6.
+7. M. quesadilla, wieprz, 7.
+`.trim();
+      expect(response.text).toContain(expectedText);
+    });
+
+    it("should sort items by drink", () => {
+      const type = OrderItemType.big_burrito;
+      const items = [
+        new OrderItem("", type, "pork", "1", "lemonade", ""),
+        new OrderItem("", type, "pork", "1", "mangolade", ""),
+        new OrderItem("", type, "pork", "1", "lemonade", ""),
+        new OrderItem("", type, "pork", "1", "mangolade", ""),
+      ];
+      const order = new Order("", "", true, items);
+
+      const response = handleGetSms.responses.getSms(order);
+
+      const expectedText = `
+1. D. burrito, wieprz, 1, mango.
+2. D. burrito, wieprz, 1, mango.
+3. D. burrito, wieprz, 1, lemon.
+4. D. burrito, wieprz, 1, lemon.
+`.trim();
+      expect(response.text).toContain(expectedText);
+    });
   });
 });

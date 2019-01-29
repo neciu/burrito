@@ -5,8 +5,9 @@ import { CommandType } from "commands";
 import { KoaCtx } from "types";
 import { DateTime } from "luxon";
 import { getEventStore } from "EventStoreService";
-import { Order } from "aggregates/aggregates";
+import { Order, OrderItem } from "aggregates/aggregates";
 import fillTemplate from "es6-dynamic-template";
+import OrderItemType from "OrderItemType";
 
 export const helpResponse = {
   text: `It seems you'd use some help. Please take a look on the list of available commands below:
@@ -176,6 +177,7 @@ handleGetSms.responses = {
     text: fillTemplate(process.env.SMS_TEMPLATE, {
       date: order.date,
       items: order.items
+        .sort(itemComparator)
         .map((item, index) => `${index + 1}. ${item.toSmsName()}`)
         .join("\n"),
       price: String(order.getPrice() / 100).replace(".", ","),
@@ -190,4 +192,38 @@ function extractDateFromCommand(
   const dateCandidate = command.replace(commandPrefix + " ", "").trim();
   const date = DateTime.fromISO(dateCandidate);
   return date.isValid ? date.toISODate() : undefined;
+}
+
+function itemComparator(a: OrderItem, b: OrderItem): number {
+  const typeScore = {
+    [OrderItemType.big_burrito]: 1000,
+    [OrderItemType.small_burrito]: 2000,
+    [OrderItemType.double_quesadilla]: 3000,
+    [OrderItemType.quesadilla]: 4000,
+  };
+
+  const fillingScore = {
+    beef: 100,
+    pork: 200,
+    chicken: 300,
+    vegetables: 400,
+  };
+
+  const drinkScore = {
+    mangolade: 1,
+    lemonade: 2,
+  };
+
+  const aScore =
+    typeScore[a.type] +
+    fillingScore[a.filling] +
+    parseInt(a.sauce) * 10 +
+    (a.drink ? drinkScore[a.drink] : 0);
+  const bScore =
+    typeScore[b.type] +
+    fillingScore[b.filling] +
+    parseInt(b.sauce) * 10 +
+    (b.drink ? drinkScore[b.drink] : 0);
+
+  return aScore - bScore;
 }
