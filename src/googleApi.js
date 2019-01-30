@@ -1,6 +1,7 @@
 // @flow strict
 
 import { google } from "googleapis";
+import { performance } from "perf_hooks";
 
 export type GoogleApi = {
   sheetsAppend: (request: any) => Promise<any>,
@@ -12,14 +13,28 @@ const api: GoogleApi = {
     const auth = getJwtAuth();
     const sheets = getSheets(auth);
 
+    console.info("sheetsAppend", { values: request.resource.values });
+    const start = performance.now();
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.append({ ...request, auth }, function(
         err,
         response,
       ) {
+        const end = performance.now();
         if (err) {
+          console.error("sheetsAppend", {
+            values: request.resource.values,
+            error: err,
+            success: false,
+            durationInMillis: end - start,
+          });
           reject(err);
         } else {
+          console.info("sheetsAppend", {
+            values: request.resource.values,
+            success: true,
+            durationInMillis: end - start,
+          });
           resolve(response);
         }
       });
@@ -29,14 +44,26 @@ const api: GoogleApi = {
     const auth = getJwtAuth();
     const sheets = getSheets(auth);
 
+    console.info("sheetsGet", {});
+    const start = performance.now();
     return new Promise((resolve, reject) => {
       sheets.spreadsheets.values.get({ ...request, auth }, function(
         err,
         response,
       ) {
+        const end = performance.now();
         if (err) {
+          console.error("sheetsGet", {
+            error: err,
+            success: false,
+            durationInMillis: end - start,
+          });
           reject(err);
         } else {
+          console.info("sheetsGet", {
+            success: true,
+            durationInMillis: end - start,
+          });
           resolve(response);
         }
       });
