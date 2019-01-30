@@ -43,6 +43,4 @@ export const Fillings = {
 
 export type Filling = $Keys<typeof Fillings>;
 
-export type FillingOptions = "beef" | "pork" | "chicken" | "vegetables";
-
 export type DrinkOptions = "mangolade" | "lemonade";

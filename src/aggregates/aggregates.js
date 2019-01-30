@@ -1,7 +1,8 @@
 // @flow strict
 
 import OrderItemType from "OrderItemType";
-import type { DrinkOptions, FillingOptions } from "types";
+import type { DrinkOptions, Filling } from "types";
+import { Fillings } from "types";
 
 export class Order {
   id: string;
@@ -29,7 +30,7 @@ export class Order {
 export class OrderItem {
   id: string;
   type: $Keys<typeof OrderItemType>;
-  filling: FillingOptions;
+  filling: Filling;
   sauce: string;
   drink: ?DrinkOptions;
   comments: string;
@@ -37,7 +38,7 @@ export class OrderItem {
   constructor(
     id: string,
     type: $Keys<typeof OrderItemType>,
-    filling: FillingOptions,
+    filling: Filling,
     sauce: string,
     drink: ?DrinkOptions,
     comments: string,
@@ -84,12 +85,12 @@ function getTypeName(type: $Keys<typeof OrderItemType>): string {
   }[type];
 }
 
-function getFillingName(filling: FillingOptions): string {
+function getFillingName(filling: Filling): string {
   return {
-    beef: "wół",
-    chicken: "kura",
-    pork: "wieprz",
-    vegetables: "wege",
+    [Fillings.beef]: "wół",
+    [Fillings.chicken]: "kura",
+    [Fillings.pork]: "wieprz",
+    [Fillings.vegetables]: "wege",
   }[filling];
 }
 
