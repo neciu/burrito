@@ -1,22 +1,23 @@
 import OrderItemType from "OrderItemType";
 import CallbackId from "CallbackId";
+import { Fillings } from "types";
 
 const fillingOptions = [
   {
     label: "Beef",
-    value: "beef",
+    value: Fillings.beef,
   },
   {
     label: "Pork",
-    value: "pork",
+    value: Fillings.pork,
   },
   {
     label: "Chicken",
-    value: "chicken",
+    value: Fillings.chicken,
   },
   {
     label: "Vegetarian",
-    value: "vegetarian",
+    value: Fillings.vegetables,
   },
 ];
 

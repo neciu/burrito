@@ -34,6 +34,15 @@ export type Dialog = {
   }>,
 };
 
+export const Fillings = {
+  beef: "beef",
+  pork: "pork",
+  chicken: "chicken",
+  vegetables: "vegetables",
+};
+
+export type Filling = $Keys<typeof Fillings>;
+
 export type FillingOptions = "beef" | "pork" | "chicken" | "vegetables";
 
 export type DrinkOptions = "mangolade" | "lemonade";

@@ -11,6 +11,7 @@ import type {
 import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";
 import dialogs from "dialogs";
+import { Fillings } from "types";
 
 export const orderResponse = {
   attachments: [
@@ -61,19 +62,19 @@ export function getBurritoDialog(callbackId: string): Dialog {
         options: [
           {
             label: "Beef",
-            value: "beef",
+            value: Fillings.beef,
           },
           {
             label: "Pork",
-            value: "pork",
+            value: Fillings.pork,
           },
           {
             label: "Chicken",
-            value: "chicken",
+            value: Fillings.chicken,
           },
           {
             label: "Vegetarian",
-            value: "vegetarian",
+            value: Fillings.vegetables,
           },
         ],
       },
@@ -172,10 +173,10 @@ function getResponseMessage(
     [OrderItemType.double_quesadilla]: "double quesadilla",
   }[type];
   const fillingName = {
-    beef: "beef",
-    pork: "pork",
-    chicken: "chicken",
-    vegetarian: "vegetables",
+    [Fillings.beef]: "beef",
+    [Fillings.pork]: "pork",
+    [Fillings.chicken]: "chicken",
+    [Fillings.vegetables]: "vegetables",
   }[filling];
   const sauceName = {
     "1": "mild salsa",

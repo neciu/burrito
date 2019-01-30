@@ -19,6 +19,7 @@ import {
 } from "EventStoreService";
 import { Order, OrderItem } from "aggregates/aggregates";
 import OrderItemType from "OrderItemType";
+import { Fillings } from "types";
 
 function makePayload(params) {
   return {
@@ -261,7 +262,7 @@ describe("show order command", () => {
     const author = "U1337";
     const date = "2019-01-01";
     const type = "big_burrito";
-    const filling = "pork";
+    const filling = Fillings.pork;
     const sauce = "7";
     const drink = "mangolade";
     const comments = "This is a short comment.";
@@ -330,7 +331,7 @@ describe("get sms command", () => {
         new OrderItem(
           "id",
           OrderItemType.big_burrito,
-          "beef",
+          Fillings.beef,
           "4",
           "mangolade",
           "short comment",
@@ -354,7 +355,7 @@ describe("get sms command", () => {
         new OrderItem(
           "id",
           OrderItemType.big_burrito,
-          "beef",
+          Fillings.beef,
           "4",
           "mangolade",
           "short comment",
@@ -362,7 +363,7 @@ describe("get sms command", () => {
         new OrderItem(
           "id",
           OrderItemType.small_burrito,
-          "chicken",
+          Fillings.chicken,
           "6",
           undefined,
           "short comment",
@@ -384,14 +385,14 @@ describe("get sms command", () => {
 
   describe("getSms", () => {
     it.each`
-      type                               | filling         | sauce  | drink          | expectedText
-      ${OrderItemType.big_burrito}       | ${"beef"}       | ${"1"} | ${"mangolade"} | ${"1. D. burrito, wół, 1, mango."}
-      ${OrderItemType.big_burrito}       | ${"pork"}       | ${"2"} | ${"lemonade"}  | ${"1. D. burrito, wieprz, 2, lemon."}
-      ${OrderItemType.small_burrito}     | ${"chicken"}    | ${"3"} | ${undefined}   | ${"1. M. burrito, kura, 3."}
-      ${OrderItemType.double_quesadilla} | ${"vegetables"} | ${"4"} | ${"mangolade"} | ${"1. D. quesadilla, wege, 4, mango."}
-      ${OrderItemType.double_quesadilla} | ${"beef"}       | ${"5"} | ${"lemonade"}  | ${"1. D. quesadilla, wół, 5, lemon."}
-      ${OrderItemType.quesadilla}        | ${"pork"}       | ${"6"} | ${undefined}   | ${"1. M. quesadilla, wieprz, 6."}
-      ${OrderItemType.quesadilla}        | ${"chicken"}    | ${"7"} | ${undefined}   | ${"1. M. quesadilla, kura, 7."}
+      type                               | filling                | sauce  | drink          | expectedText
+      ${OrderItemType.big_burrito}       | ${Fillings.beef}       | ${"1"} | ${"mangolade"} | ${"1. D. burrito, wół, 1, mango."}
+      ${OrderItemType.big_burrito}       | ${Fillings.pork}       | ${"2"} | ${"lemonade"}  | ${"1. D. burrito, wieprz, 2, lemon."}
+      ${OrderItemType.small_burrito}     | ${Fillings.chicken}    | ${"3"} | ${undefined}   | ${"1. M. burrito, kura, 3."}
+      ${OrderItemType.double_quesadilla} | ${Fillings.vegetables} | ${"4"} | ${"mangolade"} | ${"1. D. quesadilla, wege, 4, mango."}
+      ${OrderItemType.double_quesadilla} | ${Fillings.beef}       | ${"5"} | ${"lemonade"}  | ${"1. D. quesadilla, wół, 5, lemon."}
+      ${OrderItemType.quesadilla}        | ${Fillings.pork}       | ${"6"} | ${undefined}   | ${"1. M. quesadilla, wieprz, 6."}
+      ${OrderItemType.quesadilla}        | ${Fillings.chicken}    | ${"7"} | ${undefined}   | ${"1. M. quesadilla, kura, 7."}
     `(
       "should render item name properly $type $filling $sauce $drink",
       ({ type, filling, sauce, drink, expectedText }) => {
@@ -409,16 +410,23 @@ describe("get sms command", () => {
         new OrderItem(
           "",
           OrderItemType.double_quesadilla,
-          "beef",
+          Fillings.beef,
           "1",
           "mangolade",
           "",
         ),
-        new OrderItem("", OrderItemType.quesadilla, "beef", "1", undefined, ""),
+        new OrderItem(
+          "",
+          OrderItemType.quesadilla,
+          Fillings.beef,
+          "1",
+          undefined,
+          "",
+        ),
         new OrderItem(
           "",
           OrderItemType.big_burrito,
-          "beef",
+          Fillings.beef,
           "1",
           "mangolade",
           "",
@@ -426,7 +434,7 @@ describe("get sms command", () => {
         new OrderItem(
           "",
           OrderItemType.small_burrito,
-          "beef",
+          Fillings.beef,
           "1",
           undefined,
           "",
@@ -448,10 +456,10 @@ describe("get sms command", () => {
     it("should sort items by filling", () => {
       const type = OrderItemType.quesadilla;
       const items = [
-        new OrderItem("", type, "chicken", "1", undefined, ""),
-        new OrderItem("", type, "vegetables", "1", undefined, ""),
-        new OrderItem("", type, "pork", "1", undefined, ""),
-        new OrderItem("", type, "beef", "1", undefined, ""),
+        new OrderItem("", type, Fillings.chicken, "1", undefined, ""),
+        new OrderItem("", type, Fillings.vegetables, "1", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "1", undefined, ""),
+        new OrderItem("", type, Fillings.beef, "1", undefined, ""),
       ];
       const order = new Order("", "", true, items);
 
@@ -469,13 +477,13 @@ describe("get sms command", () => {
     it("should sort items by sauce", () => {
       const type = OrderItemType.quesadilla;
       const items = [
-        new OrderItem("", type, "pork", "3", undefined, ""),
-        new OrderItem("", type, "pork", "2", undefined, ""),
-        new OrderItem("", type, "pork", "6", undefined, ""),
-        new OrderItem("", type, "pork", "7", undefined, ""),
-        new OrderItem("", type, "pork", "1", undefined, ""),
-        new OrderItem("", type, "pork", "5", undefined, ""),
-        new OrderItem("", type, "pork", "4", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "3", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "2", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "6", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "7", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "1", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "5", undefined, ""),
+        new OrderItem("", type, Fillings.pork, "4", undefined, ""),
       ];
       const order = new Order("", "", true, items);
 
@@ -496,10 +504,10 @@ describe("get sms command", () => {
     it("should sort items by drink", () => {
       const type = OrderItemType.big_burrito;
       const items = [
-        new OrderItem("", type, "pork", "1", "lemonade", ""),
-        new OrderItem("", type, "pork", "1", "mangolade", ""),
-        new OrderItem("", type, "pork", "1", "lemonade", ""),
-        new OrderItem("", type, "pork", "1", "mangolade", ""),
+        new OrderItem("", type, Fillings.pork, "1", "lemonade", ""),
+        new OrderItem("", type, Fillings.pork, "1", "mangolade", ""),
+        new OrderItem("", type, Fillings.pork, "1", "lemonade", ""),
+        new OrderItem("", type, Fillings.pork, "1", "mangolade", ""),
       ];
       const order = new Order("", "", true, items);
 
