@@ -1,8 +1,8 @@
 // @flow strict
 
 import OrderItemType from "OrderItemType";
-import type { DrinkOptions, Filling } from "types";
-import { Fillings } from "types";
+import type { Drink, Filling } from "types";
+import { Drinks, Fillings } from "types";
 
 export class Order {
   id: string;
@@ -32,7 +32,7 @@ export class OrderItem {
   type: $Keys<typeof OrderItemType>;
   filling: Filling;
   sauce: string;
-  drink: ?DrinkOptions;
+  drink: ?Drink;
   comments: string;
 
   constructor(
@@ -40,7 +40,7 @@ export class OrderItem {
     type: $Keys<typeof OrderItemType>,
     filling: Filling,
     sauce: string,
-    drink: ?DrinkOptions,
+    drink: ?Drink,
     comments: string,
   ) {
     this.id = id;
@@ -94,11 +94,11 @@ function getFillingName(filling: Filling): string {
   }[filling];
 }
 
-function getDrinkName(drink: ?DrinkOptions): ?string {
+function getDrinkName(drink: ?Drink): ?string {
   return drink
     ? {
-        mangolade: "mango",
-        lemonade: "lemon",
+        [Drinks.mangolade]: "mango",
+        [Drinks.lemonade]: "lemon",
       }[drink]
     : undefined;
 }

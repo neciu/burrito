@@ -6,7 +6,7 @@ import type { AddOrderItemCommand } from "commands";
 import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";
 import { getEventStore, initializeEventStore } from "EventStoreService";
-import { Fillings } from "types";
+import { Drinks, Fillings } from "types";
 
 jest.mock("uuid/v4");
 
@@ -31,10 +31,10 @@ describe("appendEvent", () => {
   });
 
   it.each`
-    userName           | itemType                           | filling                | sauce  | drink         | comments           | expectedValues
-    ${"mr.john.smith"} | ${OrderItemType.big_burrito}       | ${Fillings.beef}       | ${"1"} | ${"lemonade"} | ${"I like tacos!"} | ${["mr.john.smith", "2019-01-01", OrderItemType.big_burrito, Fillings.beef, "1", "lemonade", "I like tacos!"]}
-    ${"admin1"}        | ${OrderItemType.quesadilla}        | ${Fillings.vegetables} | ${"4"} | ${undefined}  | ${""}              | ${["admin1", "2019-01-01", OrderItemType.quesadilla, Fillings.vegetables, "4", "", ""]}
-    ${"admin2"}        | ${OrderItemType.double_quesadilla} | ${Fillings.pork}       | ${"7"} | ${undefined}  | ${"I like tacos!"} | ${["admin2", "2019-01-01", OrderItemType.double_quesadilla, Fillings.pork, "7", "", "I like tacos!"]}
+    userName           | itemType                           | filling                | sauce  | drink              | comments           | expectedValues
+    ${"mr.john.smith"} | ${OrderItemType.big_burrito}       | ${Fillings.beef}       | ${"1"} | ${Drinks.lemonade} | ${"I like tacos!"} | ${["mr.john.smith", "2019-01-01", OrderItemType.big_burrito, Fillings.beef, "1", Drinks.lemonade, "I like tacos!"]}
+    ${"admin1"}        | ${OrderItemType.quesadilla}        | ${Fillings.vegetables} | ${"4"} | ${undefined}       | ${""}              | ${["admin1", "2019-01-01", OrderItemType.quesadilla, Fillings.vegetables, "4", "", ""]}
+    ${"admin2"}        | ${OrderItemType.double_quesadilla} | ${Fillings.pork}       | ${"7"} | ${undefined}       | ${"I like tacos!"} | ${["admin2", "2019-01-01", OrderItemType.double_quesadilla, Fillings.pork, "7", "", "I like tacos!"]}
   `(
     "should handle AddOrderItemCommand with $userName $itemType $filling $sauce $drink $comments",
     async ({

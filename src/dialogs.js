@@ -1,6 +1,6 @@
 import OrderItemType from "OrderItemType";
 import CallbackId from "CallbackId";
-import { Fillings } from "types";
+import { Drinks, Fillings } from "types";
 
 const fillingOptions = [
   {
@@ -55,11 +55,11 @@ const sauceOptions = [
 const drinkOptions = [
   {
     label: "Mangolade",
-    value: "mangolade",
+    value: Drinks.mangolade,
   },
   {
     label: "Lemonade",
-    value: "lemonade",
+    value: Drinks.lemonade,
   },
 ];
 

@@ -43,4 +43,9 @@ export const Fillings = {
 
 export type Filling = $Keys<typeof Fillings>;
 
-export type DrinkOptions = "mangolade" | "lemonade";
+export const Drinks = {
+  mangolade: "mangolade",
+  lemonade: "lemonade",
+};
+
+export type Drink = $Keys<typeof Drinks>;

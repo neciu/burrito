@@ -11,7 +11,7 @@ import type {
 import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";
 import dialogs from "dialogs";
-import { Fillings } from "types";
+import { Drinks, Fillings } from "types";
 
 export const orderResponse = {
   attachments: [
@@ -120,11 +120,11 @@ export function getBurritoDialog(callbackId: string): Dialog {
         options: [
           {
             label: "Mangolade",
-            value: "mangolade",
+            value: Drinks.mangolade,
           },
           {
             label: "Lemonade",
-            value: "lemonade",
+            value: Drinks.lemonade,
           },
         ],
       },

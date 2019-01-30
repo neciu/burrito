@@ -11,7 +11,7 @@ import type {
 import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";
 import dialogs from "dialogs";
-import { Fillings } from "types";
+import { Drinks, Fillings } from "types";
 
 jest.mock("slackApi");
 jest.mock("eventStore");
@@ -75,7 +75,7 @@ describe("AddOrderItemCommand", () => {
         type: OrderItemType.big_burrito,
         filling: Fillings.beef,
         sauce: "1",
-        drink: "mangolade",
+        drink: Drinks.mangolade,
         comments: "I like tacos!",
       },
     };
@@ -94,7 +94,7 @@ describe("AddOrderItemCommand", () => {
         type: OrderItemType.big_burrito,
         filling: Fillings.beef,
         sauce: "1",
-        drink: "mangolade",
+        drink: Drinks.mangolade,
         comments: "I like tacos!",
       },
     };
@@ -105,14 +105,14 @@ describe("AddOrderItemCommand", () => {
   });
 
   it.each`
-    type                               | filling                | sauce  | drink          | message
-    ${OrderItemType.big_burrito}       | ${Fillings.beef}       | ${"1"} | ${"lemonade"}  | ${"big burrito with beef, mild salsa sauce (1) and lemonade"}
-    ${OrderItemType.big_burrito}       | ${Fillings.chicken}    | ${"2"} | ${"mangolade"} | ${"big burrito with chicken, hot salsa sauce (2) and mangolade"}
-    ${OrderItemType.small_burrito}     | ${Fillings.pork}       | ${"3"} | ${undefined}   | ${"small burrito with pork and chipottle sauce (3)"}
-    ${OrderItemType.quesadilla}        | ${Fillings.vegetables} | ${"4"} | ${undefined}   | ${"quesadilla with vegetables and piri-piri sauce (4)"}
-    ${OrderItemType.double_quesadilla} | ${Fillings.beef}       | ${"5"} | ${"mangolade"} | ${"double quesadilla with beef, habanero sauce (5) and mangolade"}
-    ${OrderItemType.small_burrito}     | ${Fillings.chicken}    | ${"6"} | ${undefined}   | ${"small burrito with chicken and naga jolokia sauce (6)"}
-    ${OrderItemType.small_burrito}     | ${Fillings.beef}       | ${"7"} | ${undefined}   | ${"small burrito with beef and killer sauce (7)"}
+    type                               | filling                | sauce  | drink               | message
+    ${OrderItemType.big_burrito}       | ${Fillings.beef}       | ${"1"} | ${Drinks.lemonade}  | ${"big burrito with beef, mild salsa sauce (1) and lemonade"}
+    ${OrderItemType.big_burrito}       | ${Fillings.chicken}    | ${"2"} | ${Drinks.mangolade} | ${"big burrito with chicken, hot salsa sauce (2) and mangolade"}
+    ${OrderItemType.small_burrito}     | ${Fillings.pork}       | ${"3"} | ${undefined}        | ${"small burrito with pork and chipottle sauce (3)"}
+    ${OrderItemType.quesadilla}        | ${Fillings.vegetables} | ${"4"} | ${undefined}        | ${"quesadilla with vegetables and piri-piri sauce (4)"}
+    ${OrderItemType.double_quesadilla} | ${Fillings.beef}       | ${"5"} | ${Drinks.mangolade} | ${"double quesadilla with beef, habanero sauce (5) and mangolade"}
+    ${OrderItemType.small_burrito}     | ${Fillings.chicken}    | ${"6"} | ${undefined}        | ${"small burrito with chicken and naga jolokia sauce (6)"}
+    ${OrderItemType.small_burrito}     | ${Fillings.beef}       | ${"7"} | ${undefined}        | ${"small burrito with beef and killer sauce (7)"}
   `(
     "should call respond for $type $filling $sauce $drink",
     async ({ type, filling, sauce, drink, message }) => {
