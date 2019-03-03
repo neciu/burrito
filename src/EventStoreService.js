@@ -7,6 +7,7 @@ import {
   BaseEvent,
   CloseOrderEvent,
   OpenNewOrderEvent,
+  ReceivePaymentEvent,
 } from "burritoEvents";
 
 interface EventStoreInterface {
@@ -21,10 +22,18 @@ interface EventStoreInterface {
     drink: ?string,
     comments: string,
   ): Promise<void>;
+  receivePayment(
+    author: string,
+    sender: string,
+    amount: number,
+    type: string,
+    comments: string,
+  ): Promise<void>;
   getStillOpenedOrdersOpenOrderEvents(): Promise<Array<OpenNewOrderEvent>>;
   getCloseOrderEvents(): Promise<Array<CloseOrderEvent>>;
   getOpenOrderEvent(date: string): Promise<?OpenNewOrderEvent>;
   getAddOrderItemEvents(date: string): Promise<Array<AddOrderItemEvent>>;
+  getReceivePaymentEvents(): Promise<Array<ReceivePaymentEvent>>;
 
   getOrder(date: string): Promise<?Order>;
 }
@@ -63,6 +72,12 @@ class BaseEventStore implements EventStoreInterface {
     );
   }
 
+  async receivePayment(author, sender, amount, type, comments) {
+    await this.append(
+      new ReceivePaymentEvent(author, sender, amount, type, comments),
+    );
+  }
+
   async getStillOpenedOrdersOpenOrderEvents() {
     const events = await this.getEvents([
       OpenNewOrderEvent.eventType,
@@ -93,6 +108,10 @@ class BaseEventStore implements EventStoreInterface {
       AddOrderItemEvent.eventType,
     ]);
     return allEvents.filter(e => e.orderDate === date);
+  }
+
+  async getReceivePaymentEvents() {
+    return await this.getEvents([ReceivePaymentEvent.eventType]);
   }
 
   async getOrder(date) {
@@ -148,6 +167,7 @@ export function initializeEventStore() {
           [OpenNewOrderEvent.eventType]: OpenNewOrderEvent.fromArray,
           [CloseOrderEvent.eventType]: CloseOrderEvent.fromArray,
           [AddOrderItemEvent.eventType]: AddOrderItemEvent.fromArray,
+          [ReceivePaymentEvent.eventType]: ReceivePaymentEvent.fromArray,
         };
 
         return filteredEvents.map(e => typeToBuilder[e[2]](e));

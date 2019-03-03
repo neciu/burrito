@@ -161,3 +161,64 @@ export class AddOrderItemEvent extends BaseEvent {
 }
 
 AddOrderItemEvent.eventType = "add_order_item";
+
+export class ReceivePaymentEvent extends BaseEvent {
+  static eventType: string;
+  sender: string;
+  amount: number;
+  type: string;
+  comments: string;
+
+  constructor(
+    author: string,
+    sender: string,
+    amount: number,
+    type: string,
+    comments: string,
+  ) {
+    super(author);
+    this.sender = sender;
+    this.amount = amount;
+    this.type = type;
+    this.comments = comments;
+  }
+
+  toArray() {
+    return [
+      this.id,
+      this.timestamp,
+      ReceivePaymentEvent.eventType,
+      String(this.version),
+      this.author,
+      this.sender,
+      String(this.amount),
+      this.type,
+      this.comments,
+    ];
+  }
+
+  static fromArray(array: Array<string>) {
+    const [
+      id,
+      timestamp,
+      eventType,
+      version,
+      author,
+      sender,
+      amount,
+      type,
+      comments,
+    ] = array;
+    const event = new ReceivePaymentEvent(
+      author,
+      sender,
+      Number(amount),
+      type,
+      comments,
+    );
+    event.id = id;
+    event.timestamp = timestamp;
+    return event;
+  }
+}
+ReceivePaymentEvent.eventType = "receive_payment";

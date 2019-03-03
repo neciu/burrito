@@ -1,14 +1,18 @@
 // @flow strict
 
-import myserver from "myserver";
 import supertest from "supertest";
 import dispatchCommand from "dispatchCommand";
 import CallbackId from "CallbackId";
 import OrderItemType from "OrderItemType";
 import type { AddOrderItemCommand, ShowOrderItemDialogCommand } from "commands";
 import { CommandType } from "commands";
+import myserver from "myserver/index";
+import { getEventStore, initializeEventStore } from "EventStoreService";
+import { ReceivePaymentEvent } from "burritoEvents";
+import { respond } from "slackApi";
 
 jest.mock("dispatchCommand");
+jest.mock("slackApi");
 
 describe("POST /slack/actions", () => {
   let testServer = undefined;
@@ -18,8 +22,7 @@ describe("POST /slack/actions", () => {
   });
 
   afterAll(() => {
-    // $FlowFixMe
-    testServer.close();
+    testServer && testServer.close();
   });
 
   it.each`
@@ -102,4 +105,57 @@ describe("POST /slack/actions", () => {
       expect(dispatchCommand).toHaveBeenCalledWith(command);
     },
   );
+});
+
+describe("receive payment submission", () => {
+  let testServer = undefined;
+
+  beforeAll(() => {
+    testServer = myserver.listen();
+  });
+
+  afterAll(() => {
+    testServer && testServer.close();
+  });
+
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
+  it("should store payment in event store", async () => {
+    let events = await getEventStore().getReceivePaymentEvents();
+    expect(events.length).toEqual(0);
+    const payload = {
+      type: "dialog_submission",
+      callback_id: CallbackId.receive_payment,
+      response_url: "lolkatz.com",
+      user: {
+        id: "U1337",
+      },
+      submission: {
+        sender: "U1337x2",
+        amount: "42.42",
+        type: "bank_transfer",
+        comments: "No comments...",
+      },
+    };
+
+    await supertest(testServer)
+      .post("/slack/actions")
+      .send({ payload: JSON.stringify(payload) })
+      .expect(204, {});
+
+    events = await getEventStore().getReceivePaymentEvents();
+    expect(events.length).toEqual(1);
+    const event: ReceivePaymentEvent = events[0];
+    expect(event.author).toEqual("U1337");
+    expect(event.sender).toEqual("U1337x2");
+    expect(event.amount).toEqual(42.42);
+    expect(event.type).toEqual("bank_transfer");
+    expect(event.comments).toEqual("No comments...");
+    expect(respond).toHaveBeenCalledWith(
+      "lolkatz.com",
+      ":white_check_mark: 42.42 PLN received.",
+    );
+  });
 });
