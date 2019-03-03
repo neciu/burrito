@@ -11,15 +11,11 @@ import {
   helpResponse,
   openNewOrderWrongOrMissingDateResponse,
 } from "slashCommands/slashCommands";
-import {
-  CloseOrderEvent,
-  getEventStore,
-  initializeEventStore,
-  OpenNewOrderEvent,
-} from "EventStoreService";
+import { getEventStore, initializeEventStore } from "EventStoreService";
 import { Order, OrderItem } from "aggregates/aggregates";
 import OrderItemType from "OrderItemType";
 import { Drinks, Fillings } from "types";
+import { CloseOrderEvent, OpenNewOrderEvent } from "burritoEvents";
 
 function makePayload(params) {
   return {
