@@ -16,12 +16,18 @@ import { Order, OrderItem } from "aggregates/aggregates";
 import OrderItemType from "OrderItemType";
 import { Drinks, Fillings } from "types";
 import { CloseOrderEvent, OpenNewOrderEvent } from "burritoEvents";
+import { openDialog } from "slackApi";
+import dialogs from "dialogs";
+import CallbackId from "CallbackId";
+
+jest.mock("slackApi");
 
 function makePayload(params) {
   return {
     command: "/burrito",
     text: "help",
     user_id: "U1337",
+    trigger_id: "tr1gg3r_id",
     ...params,
   };
 }
@@ -517,5 +523,32 @@ describe("get sms command", () => {
 `.trim();
       expect(response.text).toContain(expectedText);
     });
+  });
+});
+
+describe("receive payment command", () => {
+  let testServer = undefined;
+
+  beforeAll(() => {
+    testServer = myserver.listen();
+  });
+
+  afterAll(() => {
+    testServer && testServer.close();
+  });
+
+  it("should open receive payment dialog", async () => {
+    const payload = makePayload({ text: "receive payment" });
+    const expectedResponse = {};
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+
+    expect(openDialog).toHaveBeenCalledWith(
+      payload.trigger_id,
+      dialogs[CallbackId.receive_payment],
+    );
   });
 });

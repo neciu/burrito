@@ -8,6 +8,9 @@ import { getEventStore } from "EventStoreService";
 import { Order, OrderItem } from "aggregates/aggregates";
 import fillTemplate from "es6-dynamic-template";
 import OrderItemType from "OrderItemType";
+import { openDialog } from "slackApi";
+import dialogs from "dialogs";
+import CallbackId from "CallbackId";
 
 export const helpResponse = {
   text: `It seems you'd use some help. Please take a look on the list of available commands below:
@@ -68,6 +71,14 @@ export default async function handleSlashCommands(ctx: KoaCtx) {
       text.startsWith("get sms")
     ) {
       ctx.body = await handleGetSms(text);
+    } else if (
+      command === "/burrito" &&
+      text &&
+      text.startsWith("receive payment")
+    ) {
+      const { trigger_id: triggerId } = ctx.request.body;
+      await openDialog(triggerId, dialogs[CallbackId.receive_payment]);
+      ctx.body = "";
     } else {
       ctx.body = helpResponse;
     }

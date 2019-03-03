@@ -11,10 +11,11 @@ declare export class KoaCtx {
       command?: string,
       text?: string,
       user_id?: string,
+      trigger_id: string,
     },
   };
   status: number;
-  body: {};
+  body: {} | string;
 }
 
 declare export function KoaNext(): void;

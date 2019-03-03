@@ -91,6 +91,50 @@ let commentsElement = {
   optional: "true",
 };
 
+const senderElement = {
+  label: "Sender",
+  type: "select",
+  name: "sender",
+  data_source: "users",
+};
+
+const amountElement = {
+  label: "Amount",
+  type: "text",
+  subtype: "number",
+  name: "amount",
+};
+
+const paymentTypeOptions = [
+  {
+    label: "Cash",
+    value: "cash",
+  },
+  {
+    label: "Bank Transfer",
+    value: "bank_transfer",
+  },
+  {
+    label: "Blik",
+    value: "blik",
+  },
+  {
+    label: "Revolut",
+    value: "revolut",
+  },
+  {
+    label: "Other",
+    value: "other",
+  },
+];
+
+const paymentTypeElement = {
+  label: "Payment Type",
+  type: "select",
+  name: "type",
+  options: paymentTypeOptions,
+};
+
 export default {
   [OrderItemType.big_burrito]: {
     callbackId: CallbackId.add_order_item,
@@ -119,5 +163,16 @@ export default {
     submitLabel: "Order",
     state: OrderItemType.double_quesadilla,
     elements: [fillingElement, sauceElement, drinkElement, commentsElement],
+  },
+  [CallbackId.receive_payment]: {
+    callbackId: CallbackId.receive_payment,
+    title: "Receive Payment",
+    submitLabel: "Confirm",
+    elements: [
+      senderElement,
+      amountElement,
+      paymentTypeElement,
+      commentsElement,
+    ],
   },
 };
