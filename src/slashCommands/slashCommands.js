@@ -14,8 +14,9 @@ import CallbackId from "CallbackId";
 
 export const helpResponse = {
   text: `It seems you'd use some help. Please take a look on the list of available commands below:
-- \`/burrito order\` will present you all current order options,
-- \`/burrito show order\` will list all order items for current order,
+- \`/burrito order\` presents you all current order options,
+- \`/burrito show order\` lists all order items for current order,
+- \`/burrito balance\` lists balance for all people (received payments not included for now),
 - \`/burrito help\` displays this message.`,
 };
 
