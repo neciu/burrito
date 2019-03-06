@@ -21,13 +21,13 @@ export const orderResponse = {
       actions: [
         {
           name: "orderItem",
-          text: "Burrito",
+          text: "Big Burrito",
           type: "button",
           value: OrderItemType.big_burrito,
         },
         {
           name: "orderItem",
-          text: "Small burrito",
+          text: "Small Burrito",
           type: "button",
           value: OrderItemType.small_burrito,
         },
