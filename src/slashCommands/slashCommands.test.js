@@ -32,6 +32,11 @@ function makePayload(params) {
   };
 }
 
+const author = "U1337";
+const author2 = "U1337x2";
+const date = "2019-01-01";
+const date2 = "2019-02-01";
+
 describe("order command", () => {
   let testServer = undefined;
 
@@ -332,6 +337,7 @@ describe("get sms command", () => {
       const items = [
         new OrderItem(
           "id",
+          author,
           OrderItemType.big_burrito,
           Fillings.beef,
           "4",
@@ -356,6 +362,7 @@ describe("get sms command", () => {
       const items = [
         new OrderItem(
           "id",
+          author,
           OrderItemType.big_burrito,
           Fillings.beef,
           "4",
@@ -364,6 +371,7 @@ describe("get sms command", () => {
         ),
         new OrderItem(
           "id",
+          author,
           OrderItemType.small_burrito,
           Fillings.chicken,
           "6",
@@ -398,7 +406,7 @@ describe("get sms command", () => {
     `(
       "should render item name properly $type $filling $sauce $drink",
       ({ type, filling, sauce, drink, expectedText }) => {
-        const item = new OrderItem("", type, filling, sauce, drink, "");
+        const item = new OrderItem("", author, type, filling, sauce, drink, "");
         const order = new Order("", "", true, [item]);
 
         const response = handleGetSms.responses.getSms(order);
@@ -411,6 +419,7 @@ describe("get sms command", () => {
       const items = [
         new OrderItem(
           "",
+          author,
           OrderItemType.double_quesadilla,
           Fillings.beef,
           "1",
@@ -419,6 +428,7 @@ describe("get sms command", () => {
         ),
         new OrderItem(
           "",
+          author,
           OrderItemType.quesadilla,
           Fillings.beef,
           "1",
@@ -427,6 +437,7 @@ describe("get sms command", () => {
         ),
         new OrderItem(
           "",
+          author,
           OrderItemType.big_burrito,
           Fillings.beef,
           "1",
@@ -435,6 +446,7 @@ describe("get sms command", () => {
         ),
         new OrderItem(
           "",
+          author,
           OrderItemType.small_burrito,
           Fillings.beef,
           "1",
@@ -458,10 +470,18 @@ describe("get sms command", () => {
     it("should sort items by filling", () => {
       const type = OrderItemType.quesadilla;
       const items = [
-        new OrderItem("", type, Fillings.chicken, "1", undefined, ""),
-        new OrderItem("", type, Fillings.vegetables, "1", undefined, ""),
-        new OrderItem("", type, Fillings.pork, "1", undefined, ""),
-        new OrderItem("", type, Fillings.beef, "1", undefined, ""),
+        new OrderItem("", author, type, Fillings.chicken, "1", undefined, ""),
+        new OrderItem(
+          "",
+          author,
+          type,
+          Fillings.vegetables,
+          "1",
+          undefined,
+          "",
+        ),
+        new OrderItem("", author, type, Fillings.pork, "1", undefined, ""),
+        new OrderItem("", author, type, Fillings.beef, "1", undefined, ""),
       ];
       const order = new Order("", "", true, items);
 
@@ -479,13 +499,13 @@ describe("get sms command", () => {
     it("should sort items by sauce", () => {
       const type = OrderItemType.quesadilla;
       const items = [
-        new OrderItem("", type, Fillings.pork, "3", undefined, ""),
-        new OrderItem("", type, Fillings.pork, "2", undefined, ""),
-        new OrderItem("", type, Fillings.pork, "6", undefined, ""),
-        new OrderItem("", type, Fillings.pork, "7", undefined, ""),
-        new OrderItem("", type, Fillings.pork, "1", undefined, ""),
-        new OrderItem("", type, Fillings.pork, "5", undefined, ""),
-        new OrderItem("", type, Fillings.pork, "4", undefined, ""),
+        new OrderItem("", author, type, Fillings.pork, "3", undefined, ""),
+        new OrderItem("", author, type, Fillings.pork, "2", undefined, ""),
+        new OrderItem("", author, type, Fillings.pork, "6", undefined, ""),
+        new OrderItem("", author, type, Fillings.pork, "7", undefined, ""),
+        new OrderItem("", author, type, Fillings.pork, "1", undefined, ""),
+        new OrderItem("", author, type, Fillings.pork, "5", undefined, ""),
+        new OrderItem("", author, type, Fillings.pork, "4", undefined, ""),
       ];
       const order = new Order("", "", true, items);
 
@@ -506,10 +526,42 @@ describe("get sms command", () => {
     it("should sort items by drink", () => {
       const type = OrderItemType.big_burrito;
       const items = [
-        new OrderItem("", type, Fillings.pork, "1", Drinks.lemonade, ""),
-        new OrderItem("", type, Fillings.pork, "1", Drinks.mangolade, ""),
-        new OrderItem("", type, Fillings.pork, "1", Drinks.lemonade, ""),
-        new OrderItem("", type, Fillings.pork, "1", Drinks.mangolade, ""),
+        new OrderItem(
+          "",
+          author,
+          type,
+          Fillings.pork,
+          "1",
+          Drinks.lemonade,
+          "",
+        ),
+        new OrderItem(
+          "",
+          author,
+          type,
+          Fillings.pork,
+          "1",
+          Drinks.mangolade,
+          "",
+        ),
+        new OrderItem(
+          "",
+          author,
+          type,
+          Fillings.pork,
+          "1",
+          Drinks.lemonade,
+          "",
+        ),
+        new OrderItem(
+          "",
+          author,
+          type,
+          Fillings.pork,
+          "1",
+          Drinks.mangolade,
+          "",
+        ),
       ];
       const order = new Order("", "", true, items);
 
@@ -550,5 +602,162 @@ describe("receive payment command", () => {
       payload.trigger_id,
       dialogs[CallbackId.receive_payment],
     );
+  });
+});
+
+describe("balance command", () => {
+  let testServer = undefined;
+
+  beforeAll(() => {
+    testServer = myserver.listen();
+  });
+
+  afterAll(() => {
+    testServer && testServer.close();
+  });
+
+  beforeEach(() => {
+    initializeEventStore();
+  });
+
+  const payload = makePayload({ text: "balance" });
+
+  it("should work with no orders", async () => {
+    const expectedResponse = { text: "Current balance:\n" };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+  });
+
+  it("should work with no order items", async () => {
+    await getEventStore().openOrder(author, date);
+    await getEventStore().closeOrder(author, date);
+    const expectedResponse = { text: "Current balance:\n" };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+  });
+
+  it("should work with one order item", async () => {
+    await getEventStore().openOrder(author, date);
+    await getEventStore().addOrderItem(
+      author,
+      date,
+      OrderItemType.big_burrito,
+      Fillings.pork,
+      "1",
+      Drinks.mangolade,
+      "Comments",
+    );
+    await getEventStore().closeOrder(author, date);
+    const expectedResponse = {
+      text: `Current balance:\n1. <@${author}> -24,3 PLN`,
+    };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+  });
+
+  it("should work with two order items", async () => {
+    await getEventStore().openOrder(author, date);
+    await getEventStore().addOrderItem(
+      author,
+      date,
+      OrderItemType.big_burrito,
+      Fillings.pork,
+      "1",
+      Drinks.mangolade,
+      "Comments",
+    );
+    await getEventStore().addOrderItem(
+      author,
+      date,
+      OrderItemType.small_burrito,
+      Fillings.pork,
+      "1",
+      undefined,
+      "Comments",
+    );
+    await getEventStore().closeOrder(author, date);
+    const expectedResponse = {
+      text: `Current balance:\n1. <@${author}> -38,7 PLN`,
+    };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+  });
+
+  it("should work with two order items from different ppl", async () => {
+    await getEventStore().openOrder(author, date);
+    await getEventStore().addOrderItem(
+      author,
+      date,
+      OrderItemType.big_burrito,
+      Fillings.pork,
+      "1",
+      Drinks.mangolade,
+      "Comments",
+    );
+    await getEventStore().addOrderItem(
+      author2,
+      date,
+      OrderItemType.small_burrito,
+      Fillings.pork,
+      "1",
+      undefined,
+      "Comments",
+    );
+    await getEventStore().closeOrder(author, date);
+    const expectedResponse = {
+      text: `Current balance:\n1. <@${author}> -20,7 PLN\n2. <@${author2}> -18 PLN`,
+    };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+  });
+
+  it("should work with two separate orders", async () => {
+    await getEventStore().openOrder(author, date);
+    await getEventStore().addOrderItem(
+      author,
+      date,
+      OrderItemType.big_burrito,
+      Fillings.pork,
+      "1",
+      Drinks.mangolade,
+      "Comments",
+    );
+    await getEventStore().closeOrder(author, date);
+
+    await getEventStore().openOrder(author2, date2);
+    await getEventStore().addOrderItem(
+      author2,
+      date2,
+      OrderItemType.small_burrito,
+      Fillings.pork,
+      "1",
+      undefined,
+      "Comments",
+    );
+    await getEventStore().closeOrder(author2, date2);
+
+    const expectedResponse = {
+      text: `Current balance:\n1. <@${author}> -24,3 PLN\n2. <@${author2}> -21,6 PLN`,
+    };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
   });
 });

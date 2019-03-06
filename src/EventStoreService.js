@@ -36,6 +36,7 @@ interface EventStoreInterface {
   getReceivePaymentEvents(): Promise<Array<ReceivePaymentEvent>>;
 
   getOrder(date: string): Promise<?Order>;
+  getClosedOrders(): Promise<Array<Order>>;
 }
 
 let eventStore: EventStoreInterface;
@@ -132,25 +133,37 @@ class BaseEventStore implements EventStoreInterface {
 
     if (openEvent) {
       const isClosed = !!closeEvent;
-      const items: Array<OrderItem> = events
-        .filter(e => e instanceof AddOrderItemEvent)
-        .filter(e => e.orderDate === date)
-        .map(
-          e =>
-            new OrderItem(
-              e.id,
-              e.type,
-              e.filling,
-              e.sauce,
-              e.drink,
-              e.comments,
-            ),
-        );
+      const items = getOrderItemsFromEventsForDate(events, date);
 
       return new Order(openEvent.id, date, isClosed, items);
     } else {
       return undefined;
     }
+  }
+
+  async getClosedOrders() {
+    const events = await this.getEvents([
+      OpenNewOrderEvent.eventType,
+      CloseOrderEvent.eventType,
+      AddOrderItemEvent.eventType,
+    ]);
+    const openEvents: Array<OpenNewOrderEvent> = events.filter(
+      e => e instanceof OpenNewOrderEvent,
+    );
+    const closeEvents: Array<CloseOrderEvent> = events.filter(
+      e => e instanceof CloseOrderEvent,
+    );
+    const closeEventsDates = closeEvents.map(e => e.date);
+
+    return openEvents
+      .filter(e => closeEventsDates.includes(e.date))
+      .map(openOrderEvent => {
+        const items = getOrderItemsFromEventsForDate(
+          events,
+          openOrderEvent.date,
+        );
+        return new Order(openOrderEvent.id, openOrderEvent.date, true, items);
+      });
   }
 }
 
@@ -221,4 +234,22 @@ export function initializeEventStore() {
 
 export function getEventStore(): EventStoreInterface {
   return eventStore;
+}
+
+function getOrderItemsFromEventsForDate(events, date) {
+  return events
+    .filter(e => e instanceof AddOrderItemEvent)
+    .filter(e => e.orderDate === date)
+    .map(
+      e =>
+        new OrderItem(
+          e.id,
+          e.author,
+          e.type,
+          e.filling,
+          e.sauce,
+          e.drink,
+          e.comments,
+        ),
+    );
 }

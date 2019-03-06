@@ -10,6 +10,8 @@ export class Order {
   isClosed: boolean;
   items: Array<OrderItem>;
 
+  DELIVERY_COST: number;
+
   constructor(
     id: string,
     date: string,
@@ -20,15 +22,43 @@ export class Order {
     this.date = date;
     this.isClosed = isClosed;
     this.items = items;
+    this.DELIVERY_COST = 720;
   }
 
   getPrice(): number {
-    return this.items.reduce((sum, item) => item.getPrice() + sum, 0) + 720;
+    return (
+      this.items.reduce((sum, item) => item.getPrice() + sum, 0) +
+      this.DELIVERY_COST
+    );
+  }
+
+  getParticipants(): Array<string> {
+    return Array.from(
+      new Set(
+        this.items.reduce(
+          (participants, item) => [...participants, item.author],
+          [],
+        ),
+      ),
+    );
+  }
+
+  getDeliveryShare(): number {
+    const numberOfParticipants = this.getParticipants().length;
+    return Order.getDeliveryShare(this.DELIVERY_COST, numberOfParticipants);
+  }
+
+  static getDeliveryShare(
+    deliveryCost: number,
+    numberOfParticipants: number,
+  ): number {
+    return Math.ceil(deliveryCost / 10 / numberOfParticipants) * 10;
   }
 }
 
 export class OrderItem {
   id: string;
+  author: string;
   type: $Keys<typeof OrderItemType>;
   filling: Filling;
   sauce: string;
@@ -37,6 +67,7 @@ export class OrderItem {
 
   constructor(
     id: string,
+    author: string,
     type: $Keys<typeof OrderItemType>,
     filling: Filling,
     sauce: string,
@@ -44,6 +75,7 @@ export class OrderItem {
     comments: string,
   ) {
     this.id = id;
+    this.author = author;
     this.type = type;
     this.filling = filling;
     this.sauce = sauce;

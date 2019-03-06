@@ -79,6 +79,8 @@ export default async function handleSlashCommands(ctx: KoaCtx) {
       const { trigger_id: triggerId } = ctx.request.body;
       await openDialog(triggerId, dialogs[CallbackId.receive_payment]);
       ctx.body = "";
+    } else if (command === "/burrito" && text && text.startsWith("balance")) {
+      ctx.body = await handleBalance();
     } else {
       ctx.body = helpResponse;
     }
@@ -191,7 +193,7 @@ handleGetSms.responses = {
         .sort(itemComparator)
         .map((item, index) => `${index + 1}. ${item.toSmsName()}`)
         .join("\n"),
-      price: String(order.getPrice() / 100).replace(".", ","),
+      price: dotToComma(order.getPrice() / 100),
     }),
   }),
 };
@@ -237,4 +239,43 @@ function itemComparator(a: OrderItem, b: OrderItem): number {
     (b.drink ? drinkScore[b.drink] : 0);
 
   return aScore - bScore;
+}
+
+async function handleBalance() {
+  const orders: Array<Order> = await getEventStore().getClosedOrders();
+  const allItems = orders.reduce(
+    (items, order) => [...items, ...order.items],
+    [],
+  );
+
+  const authors = Array.from(new Set(allItems.map(item => item.author)));
+
+  const balance = authors.reduce(
+    (balance, author) => ({ ...balance, [author]: 0 }),
+    {},
+  );
+  allItems.forEach(
+    item => (balance[item.author] = balance[item.author] - item.getPrice()),
+  );
+  orders.forEach(order => {
+    order
+      .getParticipants()
+      .forEach(
+        author =>
+          (balance[author] = balance[author] - order.getDeliveryShare()),
+      );
+  });
+
+  const list = authors.map(
+    (author: string, index) =>
+      `${index + 1}. <@${author}> ${dotToComma(balance[author] / 100)} PLN`,
+  );
+
+  return {
+    text: `Current balance:\n${list.join("\n")}`,
+  };
+}
+
+function dotToComma(withDot: number): string {
+  return String(withDot).replace(".", ",");
 }
