@@ -42,11 +42,23 @@ export const Fillings = {
   vegetables: "vegetables",
 };
 
-export type Filling = $Keys<typeof Fillings>;
+export type Filling = $Values<typeof Fillings>;
 
 export const Drinks = {
   mangolade: "mangolade",
   lemonade: "lemonade",
 };
 
-export type Drink = $Keys<typeof Drinks>;
+export type Drink = $Values<typeof Drinks>;
+
+export const Sauces = {
+  "1": "1",
+  "2": "2",
+  "3": "3",
+  "4": "4",
+  "5": "5",
+  "6": "6",
+  "7": "7",
+};
+
+export type Sauce = $Values<typeof Sauces>;

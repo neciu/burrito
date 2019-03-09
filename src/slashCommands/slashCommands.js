@@ -280,3 +280,7 @@ async function handleBalance() {
 function dotToComma(withDot: number): string {
   return String(withDot).replace(".", ",");
 }
+
+export function readableMoneyAmount(number: number): string {
+  return String(number / 100).replace(".", ",");
+}

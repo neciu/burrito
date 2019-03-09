@@ -1,6 +1,8 @@
 // @flow strict
 
 import uuidv4 from "uuid/v4";
+import type { Drink, Filling, Sauce } from "types";
+import OrderItemType from "OrderItemType";
 
 export class BaseEvent {
   id: string;
@@ -91,19 +93,19 @@ CloseOrderEvent.eventType = "close_order";
 export class AddOrderItemEvent extends BaseEvent {
   static eventType: string;
   orderDate: string;
-  type: string;
-  filling: string;
-  sauce: string;
-  drink: ?string;
+  type: $Keys<typeof OrderItemType>;
+  filling: Filling;
+  sauce: Sauce;
+  drink: ?Drink;
   comments: string;
 
   constructor(
     author: string,
     orderDate: string,
-    type: string,
-    filling: string,
-    sauce: string,
-    drink: ?string,
+    type: $Keys<typeof OrderItemType>,
+    filling: Filling,
+    sauce: Sauce,
+    drink: ?Drink,
     comments: string,
   ) {
     super(author);

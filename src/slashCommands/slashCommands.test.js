@@ -10,6 +10,7 @@ import {
   handleGetSms,
   helpResponse,
   openNewOrderWrongOrMissingDateResponse,
+  readableMoneyAmount,
 } from "slashCommands/slashCommands";
 import { getEventStore, initializeEventStore } from "EventStoreService";
 import { Order, OrderItem } from "aggregates/aggregates";
@@ -19,6 +20,12 @@ import { CloseOrderEvent, OpenNewOrderEvent } from "burritoEvents";
 import { openDialog } from "slackApi";
 import dialogs from "dialogs";
 import CallbackId from "CallbackId";
+import {
+  createOrder,
+  closeOrder,
+  createOrderItem,
+  refreshOrder,
+} from "testutils";
 
 jest.mock("slackApi");
 
@@ -632,8 +639,8 @@ describe("balance command", () => {
   });
 
   it("should work with no order items", async () => {
-    await getEventStore().openOrder(author, date);
-    await getEventStore().closeOrder(author, date);
+    const order = await createOrder();
+    await closeOrder(order);
     const expectedResponse = { text: "Current balance:\n" };
 
     await supertest(testServer)
@@ -642,20 +649,17 @@ describe("balance command", () => {
       .expect(200, expectedResponse);
   });
 
-  it("should work with one order item", async () => {
-    await getEventStore().openOrder(author, date);
-    await getEventStore().addOrderItem(
-      author,
-      date,
-      OrderItemType.big_burrito,
-      Fillings.pork,
-      "1",
-      Drinks.mangolade,
-      "Comments",
+  it("should return total price for O[I(a1)]", async () => {
+    let order = await createOrder();
+    const item = await createOrderItem(order);
+    await closeOrder(order);
+    order = await refreshOrder(order);
+
+    const amount = readableMoneyAmount(
+      item.getPrice() + order.getDeliveryShare(),
     );
-    await getEventStore().closeOrder(author, date);
     const expectedResponse = {
-      text: `Current balance:\n1. <@${author}> -24,3 PLN`,
+      text: `Current balance:\n1. <@${item.author}> -${amount} PLN`,
     };
 
     await supertest(testServer)
@@ -664,29 +668,18 @@ describe("balance command", () => {
       .expect(200, expectedResponse);
   });
 
-  it("should work with two order items", async () => {
-    await getEventStore().openOrder(author, date);
-    await getEventStore().addOrderItem(
-      author,
-      date,
-      OrderItemType.big_burrito,
-      Fillings.pork,
-      "1",
-      Drinks.mangolade,
-      "Comments",
+  it("should return total price for O[I(a), I(a)]", async () => {
+    let order = await createOrder();
+    const item1 = await createOrderItem(order);
+    const item2 = await createOrderItem(order, { author: item1.author });
+    await closeOrder(order);
+    order = await refreshOrder(order);
+
+    const amount = readableMoneyAmount(
+      item1.getPrice() + item2.getPrice() + order.getDeliveryShare(),
     );
-    await getEventStore().addOrderItem(
-      author,
-      date,
-      OrderItemType.small_burrito,
-      Fillings.pork,
-      "1",
-      undefined,
-      "Comments",
-    );
-    await getEventStore().closeOrder(author, date);
     const expectedResponse = {
-      text: `Current balance:\n1. <@${author}> -38,7 PLN`,
+      text: `Current balance:\n1. <@${item1.author}> -${amount} PLN`,
     };
 
     await supertest(testServer)
@@ -695,29 +688,23 @@ describe("balance command", () => {
       .expect(200, expectedResponse);
   });
 
-  it("should work with two order items from different ppl", async () => {
-    await getEventStore().openOrder(author, date);
-    await getEventStore().addOrderItem(
-      author,
-      date,
-      OrderItemType.big_burrito,
-      Fillings.pork,
-      "1",
-      Drinks.mangolade,
-      "Comments",
+  it("should return two amounts for O[I(a1), I(a2)]", async () => {
+    let order = await createOrder();
+    const item1 = await createOrderItem(order);
+    const item2 = await createOrderItem(order);
+    await closeOrder(order);
+    order = await refreshOrder(order);
+
+    const amount1 = readableMoneyAmount(
+      item1.getPrice() + order.getDeliveryShare(),
     );
-    await getEventStore().addOrderItem(
-      author2,
-      date,
-      OrderItemType.small_burrito,
-      Fillings.pork,
-      "1",
-      undefined,
-      "Comments",
+    const amount2 = readableMoneyAmount(
+      item2.getPrice() + order.getDeliveryShare(),
     );
-    await getEventStore().closeOrder(author, date);
     const expectedResponse = {
-      text: `Current balance:\n1. <@${author}> -20,7 PLN\n2. <@${author2}> -18 PLN`,
+      text: `Current balance:
+1. <@${item1.author}> -${amount1} PLN
+2. <@${item2.author}> -${amount2} PLN`,
     };
 
     await supertest(testServer)
@@ -726,33 +713,55 @@ describe("balance command", () => {
       .expect(200, expectedResponse);
   });
 
-  it("should work with two separate orders", async () => {
-    await getEventStore().openOrder(author, date);
-    await getEventStore().addOrderItem(
-      author,
-      date,
-      OrderItemType.big_burrito,
-      Fillings.pork,
-      "1",
-      Drinks.mangolade,
-      "Comments",
-    );
-    await getEventStore().closeOrder(author, date);
+  it("should return total price for O[I(a)] O[I(a)]", async () => {
+    let order1 = await createOrder();
+    const item1 = await createOrderItem(order1);
+    await closeOrder(order1);
+    order1 = await refreshOrder(order1);
+    let order2 = await createOrder();
+    const item2 = await createOrderItem(order2, { author: item1.author });
+    await closeOrder(order2);
+    order2 = await refreshOrder(order2);
 
-    await getEventStore().openOrder(author2, date2);
-    await getEventStore().addOrderItem(
-      author2,
-      date2,
-      OrderItemType.small_burrito,
-      Fillings.pork,
-      "1",
-      undefined,
-      "Comments",
+    const amount = readableMoneyAmount(
+      item1.getPrice() +
+        order1.getDeliveryShare() +
+        item2.getPrice() +
+        order2.getDeliveryShare(),
     );
-    await getEventStore().closeOrder(author2, date2);
+    const expectedResponse = {
+      text: `Current balance:
+1. <@${item1.author}> -${amount} PLN`,
+    };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+  });
+
+  it("should return two amounts for O1[I(a1)] O2[I(a2)]", async () => {
+    let order1 = await createOrder();
+    const item1 = await createOrderItem(order1);
+    await closeOrder(order1);
+    order1 = await refreshOrder(order1);
+
+    let order2 = await createOrder();
+    const item2 = await createOrderItem(order2);
+    await closeOrder(order2);
+    order2 = await refreshOrder(order2);
+
+    const amount1 = readableMoneyAmount(
+      item1.getPrice() + order1.getDeliveryShare(),
+    );
+    const amount2 = readableMoneyAmount(
+      item2.getPrice() + order2.getDeliveryShare(),
+    );
 
     const expectedResponse = {
-      text: `Current balance:\n1. <@${author}> -24,3 PLN\n2. <@${author2}> -21,6 PLN`,
+      text: `Current balance:
+1. <@${item1.author}> -${amount1} PLN
+2. <@${item2.author}> -${amount2} PLN`,
     };
 
     await supertest(testServer)

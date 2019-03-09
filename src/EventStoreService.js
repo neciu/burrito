@@ -9,6 +9,8 @@ import {
   OpenNewOrderEvent,
   ReceivePaymentEvent,
 } from "burritoEvents";
+import OrderItemType from "OrderItemType";
+import type { Drink, Filling, Sauce } from "types";
 
 interface EventStoreInterface {
   openOrder(author: string, date: string): Promise<void>;
@@ -16,12 +18,12 @@ interface EventStoreInterface {
   addOrderItem(
     author: string,
     orderDate: string,
-    type: string,
-    filling: string,
-    sauce: string,
-    drink: ?string,
+    type: $Keys<typeof OrderItemType>,
+    filling: Filling,
+    sauce: Sauce,
+    drink: ?Drink,
     comments: string,
-  ): Promise<void>;
+  ): Promise<OrderItem>;
   receivePayment(
     author: string,
     sender: string,
@@ -59,17 +61,33 @@ class BaseEventStore implements EventStoreInterface {
     await this.append(new CloseOrderEvent(author, date));
   }
 
-  async addOrderItem(author, orderDate, type, kind, sauce, drink, comments) {
-    await this.append(
-      new AddOrderItemEvent(
-        author,
-        orderDate,
-        type,
-        kind,
-        sauce,
-        drink,
-        comments,
-      ),
+  async addOrderItem(
+    author,
+    orderDate,
+    type,
+    kind,
+    sauce,
+    drink,
+    comments,
+  ): Promise<OrderItem> {
+    const event: AddOrderItemEvent = new AddOrderItemEvent(
+      author,
+      orderDate,
+      type,
+      kind,
+      sauce,
+      drink,
+      comments,
+    );
+    await this.append(event);
+    return new OrderItem(
+      event.id,
+      event.author,
+      event.type,
+      event.filling,
+      event.sauce,
+      event.drink,
+      event.comments,
     );
   }
 

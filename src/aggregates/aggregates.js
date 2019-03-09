@@ -1,7 +1,7 @@
 // @flow strict
 
 import OrderItemType from "OrderItemType";
-import type { Drink, Filling } from "types";
+import type { Drink, Filling, Sauce } from "types";
 import { Drinks, Fillings } from "types";
 
 export class Order {
@@ -70,7 +70,7 @@ export class OrderItem {
     author: string,
     type: $Keys<typeof OrderItemType>,
     filling: Filling,
-    sauce: string,
+    sauce: Sauce,
     drink: ?Drink,
     comments: string,
   ) {
