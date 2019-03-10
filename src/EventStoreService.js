@@ -257,6 +257,7 @@ export function initializeEventStore() {
           [OpenNewOrderEvent.eventType]: OpenNewOrderEvent.fromArray,
           [CloseOrderEvent.eventType]: CloseOrderEvent.fromArray,
           [AddOrderItemEvent.eventType]: AddOrderItemEvent.fromArray,
+          [ReceivePaymentEvent.eventType]: ReceivePaymentEvent.fromArray,
         };
 
         return filteredEvents.map(e => typeToBuilder[e[2]](e));
