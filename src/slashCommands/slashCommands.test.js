@@ -661,7 +661,7 @@ describe("balance command", () => {
     );
     const expectedResponse = {
       text: `Current balance:
-1. <@${item.author}> -${amount} PLN (-${amount} + 0)`,
+1. <@${item.author}> *-${amount} PLN* (-${amount} + 0)`,
     };
 
     await supertest(testServer)
@@ -682,7 +682,7 @@ describe("balance command", () => {
     );
     const expectedResponse = {
       text: `Current balance:
-1. <@${item1.author}> -${amount} PLN (-${amount} + 0)`,
+1. <@${item1.author}> *-${amount} PLN* (-${amount} + 0)`,
     };
 
     await supertest(testServer)
@@ -706,8 +706,8 @@ describe("balance command", () => {
     );
     const expectedResponse = {
       text: `Current balance:
-1. <@${item1.author}> -${amount1} PLN (-${amount1} + 0)
-2. <@${item2.author}> -${amount2} PLN (-${amount2} + 0)`,
+1. <@${item1.author}> *-${amount1} PLN* (-${amount1} + 0)
+2. <@${item2.author}> *-${amount2} PLN* (-${amount2} + 0)`,
     };
 
     await supertest(testServer)
@@ -734,7 +734,7 @@ describe("balance command", () => {
     );
     const expectedResponse = {
       text: `Current balance:
-1. <@${item1.author}> -${amount} PLN (-${amount} + 0)`,
+1. <@${item1.author}> *-${amount} PLN* (-${amount} + 0)`,
     };
 
     await supertest(testServer)
@@ -763,8 +763,8 @@ describe("balance command", () => {
 
     const expectedResponse = {
       text: `Current balance:
-1. <@${item1.author}> -${amount1} PLN (-${amount1} + 0)
-2. <@${item2.author}> -${amount2} PLN (-${amount2} + 0)`,
+1. <@${item1.author}> *-${amount1} PLN* (-${amount1} + 0)
+2. <@${item2.author}> *-${amount2} PLN* (-${amount2} + 0)`,
     };
 
     await supertest(testServer)
@@ -779,7 +779,7 @@ describe("balance command", () => {
 
     const expectedResponse = {
       text: `Current balance:
-1. <@${payment.sender}> ${amount} PLN (-0 + ${amount})`,
+1. <@${payment.sender}> *${amount} PLN* (-0 + ${amount})`,
     };
 
     await supertest(testServer)

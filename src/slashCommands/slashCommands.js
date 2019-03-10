@@ -270,7 +270,7 @@ async function handleBalance() {
     const pStr = readableMoneyAmount(p);
     const dStr = readableMoneyAmount(delta);
 
-    return `${index + 1}. <@${author}> ${dStr} PLN (-${oStr} + ${pStr})`;
+    return `${index + 1}. <@${author}> *${dStr} PLN* (-${oStr} + ${pStr})`;
   });
 
   return {
