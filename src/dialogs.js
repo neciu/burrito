@@ -1,6 +1,6 @@
 import OrderItemType from "OrderItemType";
 import CallbackId from "CallbackId";
-import { Drinks, Fillings } from "types";
+import { Drinks, Fillings, PaymentTypes } from "types";
 
 const fillingOptions = [
   {
@@ -108,23 +108,23 @@ const amountElement = {
 const paymentTypeOptions = [
   {
     label: "Cash",
-    value: "cash",
+    value: PaymentTypes.cash,
   },
   {
     label: "Bank Transfer",
-    value: "bank_transfer",
+    value: PaymentTypes.bankTransfer,
   },
   {
     label: "Blik",
-    value: "blik",
+    value: PaymentTypes.blik,
   },
   {
     label: "Revolut",
-    value: "revolut",
+    value: PaymentTypes.revolut,
   },
   {
     label: "Other",
-    value: "other",
+    value: PaymentTypes.other,
   },
 ];
 

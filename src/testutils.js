@@ -1,10 +1,10 @@
 // @flow strict
 import assert from "assert";
-import { Order, OrderItem } from "aggregates/aggregates";
+import { Order, OrderItem, Payment } from "aggregates/aggregates";
 import { getEventStore } from "EventStoreService";
 import OrderItemType from "OrderItemType";
-import type { Filling, Sauce } from "types";
-import { Fillings, Sauces } from "types";
+import type { Filling, PaymentType, Sauce } from "types";
+import { Fillings, PaymentTypes, Sauces } from "types";
 
 export async function createOrder({
   author,
@@ -57,6 +57,16 @@ export async function createOrderItem(
   );
 }
 
+export async function createPayment(): Promise<Payment> {
+  return await getEventStore().receivePayment(
+    getRandomUser(),
+    getRandomUser(),
+    getRandomAmount(),
+    getRandomPaymentType(),
+    "Comment " + getRandomUser(),
+  );
+}
+
 function getRandomUser() {
   return "U" + String(Math.floor(Math.random() * 10000)).padStart(4, "0");
 }
@@ -85,6 +95,16 @@ function getRandomFilling(): Filling {
 
 function getRandomSauce(): Sauce {
   const options = Object.values(Sauces);
+  // $FlowFixMe
+  return options[Math.floor(Math.random() * options.length)];
+}
+
+function getRandomAmount(): number {
+  return Math.floor(Math.random() * 10000) + Math.floor(Math.random() * 100);
+}
+
+function getRandomPaymentType(): PaymentType {
+  const options = Object.values(PaymentTypes);
   // $FlowFixMe
   return options[Math.floor(Math.random() * options.length)];
 }

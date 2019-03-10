@@ -62,3 +62,13 @@ export const Sauces = {
 };
 
 export type Sauce = $Values<typeof Sauces>;
+
+export const PaymentTypes = {
+  cash: "cash",
+  bankTransfer: "bank_transfer",
+  blik: "blik",
+  revolut: "revolut",
+  other: "other",
+};
+
+export type PaymentType = $Values<typeof PaymentTypes>;

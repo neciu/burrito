@@ -1,7 +1,7 @@
 // @flow strict
 
 import googleApi from "googleApi";
-import { Order, OrderItem } from "aggregates/aggregates";
+import { Order, OrderItem, Payment } from "aggregates/aggregates";
 import {
   AddOrderItemEvent,
   BaseEvent,
@@ -30,7 +30,7 @@ interface EventStoreInterface {
     amount: number,
     type: string,
     comments: string,
-  ): Promise<void>;
+  ): Promise<Payment>;
   getStillOpenedOrdersOpenOrderEvents(): Promise<Array<OpenNewOrderEvent>>;
   getCloseOrderEvents(): Promise<Array<CloseOrderEvent>>;
   getOpenOrderEvent(date: string): Promise<?OpenNewOrderEvent>;
@@ -39,6 +39,7 @@ interface EventStoreInterface {
 
   getOrder(date: string): Promise<?Order>;
   getClosedOrders(): Promise<Array<Order>>;
+  getPayments(): Promise<Array<Payment>>;
 }
 
 let eventStore: EventStoreInterface;
@@ -92,8 +93,20 @@ class BaseEventStore implements EventStoreInterface {
   }
 
   async receivePayment(author, sender, amount, type, comments) {
-    await this.append(
-      new ReceivePaymentEvent(author, sender, amount, type, comments),
+    const event = new ReceivePaymentEvent(
+      author,
+      sender,
+      amount,
+      type,
+      comments,
+    );
+    await this.append(event);
+    return new Payment(
+      event.author,
+      event.sender,
+      event.amount,
+      event.type,
+      event.comments,
     );
   }
 
@@ -182,6 +195,22 @@ class BaseEventStore implements EventStoreInterface {
         );
         return new Order(openOrderEvent.id, openOrderEvent.date, true, items);
       });
+  }
+
+  async getPayments() {
+    const events: Array<ReceivePaymentEvent> = await this.getEvents([
+      ReceivePaymentEvent.eventType,
+    ]);
+    return events.map(
+      event =>
+        new Payment(
+          event.author,
+          event.sender,
+          event.amount,
+          event.type,
+          event.comments,
+        ),
+    );
   }
 }
 

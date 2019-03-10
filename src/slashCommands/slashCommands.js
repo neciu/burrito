@@ -5,7 +5,7 @@ import { CommandType } from "commands";
 import { KoaCtx } from "types";
 import { DateTime } from "luxon";
 import { getEventStore } from "EventStoreService";
-import { Order, OrderItem } from "aggregates/aggregates";
+import { Order, OrderItem, Payment } from "aggregates/aggregates";
 import fillTemplate from "es6-dynamic-template";
 import OrderItemType from "OrderItemType";
 import { openDialog } from "slackApi";
@@ -243,38 +243,72 @@ function itemComparator(a: OrderItem, b: OrderItem): number {
 }
 
 async function handleBalance() {
-  const orders: Array<Order> = await getEventStore().getClosedOrders();
-  const allItems = orders.reduce(
-    (items, order) => [...items, ...order.items],
-    [],
+  const orders = await getTotalOrders();
+  const payments = await getTotalPayments();
+
+  const allAuthors = Array.from(
+    new Set([...Object.keys(orders), ...Object.keys(payments)]),
   );
 
-  const authors = Array.from(new Set(allItems.map(item => item.author)));
-
-  const balance = authors.reduce(
-    (balance, author) => ({ ...balance, [author]: 0 }),
+  const balance2 = allAuthors.reduce(
+    (acc, user) => ({
+      ...acc,
+      [user]: {
+        orders: orders[user] || 0,
+        payments: payments[user] || 0,
+      },
+    }),
     {},
   );
-  allItems.forEach(
-    item => (balance[item.author] = balance[item.author] - item.getPrice()),
-  );
-  orders.forEach(order => {
-    order
-      .getParticipants()
-      .forEach(
-        author =>
-          (balance[author] = balance[author] - order.getDeliveryShare()),
-      );
-  });
 
-  const list = authors.map(
-    (author: string, index) =>
-      `${index + 1}. <@${author}> ${dotToComma(balance[author] / 100)} PLN`,
-  );
+  const list = allAuthors.map((author: string, index) => {
+    const o = balance2[author].orders;
+    const p = balance2[author].payments;
+    const delta = p - o;
+
+    const oStr = readableMoneyAmount(o);
+    const pStr = readableMoneyAmount(p);
+    const dStr = readableMoneyAmount(delta);
+
+    return `${index + 1}. <@${author}> ${dStr} PLN (-${oStr} + ${pStr})`;
+  });
 
   return {
     text: `Current balance:\n${list.join("\n")}`,
   };
+}
+
+async function getTotalOrders() {
+  const orders: Array<Order> = await getEventStore().getClosedOrders();
+  return orders
+    .reduce(
+      (acc, order) => [
+        ...acc,
+        ...order
+          .getParticipants()
+          .map(participant => [participant, order.getDeliveryShare()]),
+        ...order.items.map(item => [item.author, item.getPrice()]),
+      ],
+      [],
+    )
+    .reduce(
+      (acc, [author, price]) => ({
+        ...acc,
+        [author]: (acc[author] || 0) + price,
+      }),
+      {},
+    );
+}
+
+async function getTotalPayments() {
+  const payments: Array<Payment> = await getEventStore().getPayments();
+  return payments.reduce(
+    (acc, payment) => ({
+      ...acc,
+      [payment.sender]: (acc[payment.sender] || 0) + payment.amount,
+    }),
+    {},
+  );
 }
 
 function dotToComma(withDot: number): string {

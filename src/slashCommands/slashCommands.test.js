@@ -25,6 +25,7 @@ import {
   closeOrder,
   createOrderItem,
   refreshOrder,
+  createPayment,
 } from "testutils";
 
 jest.mock("slackApi");
@@ -659,7 +660,8 @@ describe("balance command", () => {
       item.getPrice() + order.getDeliveryShare(),
     );
     const expectedResponse = {
-      text: `Current balance:\n1. <@${item.author}> -${amount} PLN`,
+      text: `Current balance:
+1. <@${item.author}> -${amount} PLN (-${amount} + 0)`,
     };
 
     await supertest(testServer)
@@ -679,7 +681,8 @@ describe("balance command", () => {
       item1.getPrice() + item2.getPrice() + order.getDeliveryShare(),
     );
     const expectedResponse = {
-      text: `Current balance:\n1. <@${item1.author}> -${amount} PLN`,
+      text: `Current balance:
+1. <@${item1.author}> -${amount} PLN (-${amount} + 0)`,
     };
 
     await supertest(testServer)
@@ -703,8 +706,8 @@ describe("balance command", () => {
     );
     const expectedResponse = {
       text: `Current balance:
-1. <@${item1.author}> -${amount1} PLN
-2. <@${item2.author}> -${amount2} PLN`,
+1. <@${item1.author}> -${amount1} PLN (-${amount1} + 0)
+2. <@${item2.author}> -${amount2} PLN (-${amount2} + 0)`,
     };
 
     await supertest(testServer)
@@ -731,7 +734,7 @@ describe("balance command", () => {
     );
     const expectedResponse = {
       text: `Current balance:
-1. <@${item1.author}> -${amount} PLN`,
+1. <@${item1.author}> -${amount} PLN (-${amount} + 0)`,
     };
 
     await supertest(testServer)
@@ -760,8 +763,23 @@ describe("balance command", () => {
 
     const expectedResponse = {
       text: `Current balance:
-1. <@${item1.author}> -${amount1} PLN
-2. <@${item2.author}> -${amount2} PLN`,
+1. <@${item1.author}> -${amount1} PLN (-${amount1} + 0)
+2. <@${item2.author}> -${amount2} PLN (-${amount2} + 0)`,
+    };
+
+    await supertest(testServer)
+      .post("/slack/commands")
+      .send(payload)
+      .expect(200, expectedResponse);
+  });
+
+  it("should return amount for P(a)", async () => {
+    const payment = await createPayment();
+    const amount = readableMoneyAmount(payment.amount);
+
+    const expectedResponse = {
+      text: `Current balance:
+1. <@${payment.sender}> ${amount} PLN (-0 + ${amount})`,
     };
 
     await supertest(testServer)

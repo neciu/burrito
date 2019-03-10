@@ -1,7 +1,7 @@
 // @flow strict
 
 import OrderItemType from "OrderItemType";
-import type { Drink, Filling, Sauce } from "types";
+import type { Drink, Filling, PaymentType, Sauce } from "types";
 import { Drinks, Fillings } from "types";
 
 export class Order {
@@ -105,6 +105,28 @@ export class OrderItem {
     } else {
       return 1530;
     }
+  }
+}
+
+export class Payment {
+  author: string;
+  sender: string;
+  amount: number;
+  type: PaymentType;
+  comments: string;
+
+  constructor(
+    author: string,
+    sender: string,
+    amount: number,
+    type: PaymentType,
+    comments: string,
+  ) {
+    this.author = author;
+    this.sender = sender;
+    this.amount = amount;
+    this.type = type;
+    this.comments = comments;
   }
 }
 
