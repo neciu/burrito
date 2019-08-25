@@ -1,9 +1,16 @@
+// @flow strict
+
 import dispatchCommand from "dispatchCommand";
 import { CommandType } from "commands";
 import OrderItemType from "OrderItemType";
 import CallbackId from "CallbackId";
 import { getEventStore } from "EventStoreService";
 import { respond } from "slackApi";
+import {
+  getTotalOrders,
+  getTotalPayments,
+  readableMoneyAmount,
+} from "eventStoreUtils";
 
 export async function handleActions(ctx) {
   const payload = JSON.parse(ctx.request.body.payload);
@@ -34,6 +41,10 @@ export async function handleActions(ctx) {
         },
       });
     } else if (payload.callback_id === CallbackId.receive_payment) {
+      const balanceBefore = await getCurrentUserBalance(
+        payload.submission.sender,
+      );
+
       const amount = Number(payload.submission.amount);
       await getEventStore().receivePayment(
         payload.user.id,
@@ -42,9 +53,17 @@ export async function handleActions(ctx) {
         payload.submission.type,
         payload.submission.comments,
       );
+
+      const balanceAfter = await getCurrentUserBalance(
+        payload.submission.sender,
+      );
+
+      let amountStr = readableMoneyAmount(amount);
+      let beforeStr = readableMoneyAmount(balanceBefore);
+      let afterStr = readableMoneyAmount(balanceAfter);
       await respond(
         payload.response_url,
-        `:white_check_mark: ${amount} PLN received.`,
+        `:white_check_mark: ${amountStr} PLN received.\nBalance before: ${beforeStr} PLN.\nBalance after: ${afterStr} PLN.`,
       );
     }
   } else {
@@ -55,4 +74,13 @@ export async function handleActions(ctx) {
   }
 
   ctx.status = 204;
+}
+
+async function getCurrentUserBalance(userId): Number {
+  const totalOrders = await getTotalOrders();
+  const totalPayments = await getTotalPayments();
+
+  const userOrders = totalOrders[userId] || 0;
+  const userPayments = totalPayments[userId] || 0;
+  return userPayments - userOrders;
 }

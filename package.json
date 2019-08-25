@@ -8,7 +8,7 @@
   "private": true,
   "engines": {
     "node": "10.4.x",
-    "yarn": "1.12.x"
+    "yarn": "1.16.x"
   },
   "devDependencies": {
     "@babel/cli": "7.1.5",

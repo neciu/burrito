@@ -10,6 +10,13 @@ import myserver from "myserver/index";
 import { getEventStore, initializeEventStore } from "EventStoreService";
 import { ReceivePaymentEvent } from "burritoEvents";
 import { respond } from "slackApi";
+import {
+  closeOrder,
+  createOrder,
+  createOrderItem,
+  refreshOrder,
+} from "testutils";
+import { readableMoneyAmount } from "eventStoreUtils";
 
 jest.mock("dispatchCommand");
 jest.mock("slackApi");
@@ -134,7 +141,7 @@ describe("receive payment submission", () => {
       },
       submission: {
         sender: "U1337x2",
-        amount: "42.42",
+        amount: "4242",
         type: "bank_transfer",
         comments: "No comments...",
       },
@@ -150,12 +157,42 @@ describe("receive payment submission", () => {
     const event: ReceivePaymentEvent = events[0];
     expect(event.author).toEqual("U1337");
     expect(event.sender).toEqual("U1337x2");
-    expect(event.amount).toEqual(42.42);
+    expect(event.amount).toEqual(4242);
     expect(event.type).toEqual("bank_transfer");
     expect(event.comments).toEqual("No comments...");
+  });
+
+  it("should return a message with balance", async () => {
+    let order = await createOrder();
+    const item = await createOrderItem(order);
+    await closeOrder(order);
+    await refreshOrder(order);
+
+    const payload = {
+      type: "dialog_submission",
+      callback_id: CallbackId.receive_payment,
+      response_url: "lolkatz.com",
+      user: {
+        id: "U1337",
+      },
+      submission: {
+        sender: item.author,
+        amount: "4242",
+        type: "bank_transfer",
+        comments: "No comments...",
+      },
+    };
+
+    await supertest(testServer)
+      .post("/slack/actions")
+      .send({ payload: JSON.stringify(payload) })
+      .expect(204, {});
+
+    const before = readableMoneyAmount(item.getPrice() + 720);
+    const after = readableMoneyAmount(4242 - (item.getPrice() + 720));
     expect(respond).toHaveBeenCalledWith(
       "lolkatz.com",
-      ":white_check_mark: 42.42 PLN received.",
+      `:white_check_mark: 42,42 PLN received.\nBalance before: -${before} PLN.\nBalance after: ${after} PLN.`,
     );
   });
 });

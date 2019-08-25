@@ -5,12 +5,17 @@ import { CommandType } from "commands";
 import { KoaCtx } from "types";
 import { DateTime } from "luxon";
 import { getEventStore } from "EventStoreService";
-import { Order, OrderItem, Payment } from "aggregates/aggregates";
+import { Order, OrderItem } from "aggregates/aggregates";
 import fillTemplate from "es6-dynamic-template";
 import OrderItemType from "OrderItemType";
 import { openDialog } from "slackApi";
 import dialogs from "dialogs";
 import CallbackId from "CallbackId";
+import {
+  getTotalOrders,
+  getTotalPayments,
+  readableMoneyAmount,
+} from "eventStoreUtils";
 
 export const helpResponse = {
   text: `It seems you'd use some help. Please take a look on the list of available commands below:
@@ -278,43 +283,6 @@ async function handleBalance() {
   };
 }
 
-async function getTotalOrders() {
-  const orders: Array<Order> = await getEventStore().getClosedOrders();
-  return orders
-    .reduce(
-      (acc, order) => [
-        ...acc,
-        ...order
-          .getParticipants()
-          .map(participant => [participant, order.getDeliveryShare()]),
-        ...order.items.map(item => [item.author, item.getPrice()]),
-      ],
-      [],
-    )
-    .reduce(
-      (acc, [author, price]) => ({
-        ...acc,
-        [author]: (acc[author] || 0) + price,
-      }),
-      {},
-    );
-}
-
-async function getTotalPayments() {
-  const payments: Array<Payment> = await getEventStore().getPayments();
-  return payments.reduce(
-    (acc, payment) => ({
-      ...acc,
-      [payment.sender]: (acc[payment.sender] || 0) + payment.amount,
-    }),
-    {},
-  );
-}
-
 function dotToComma(withDot: number): string {
   return String(withDot).replace(".", ",");
-}
-
-export function readableMoneyAmount(number: number): string {
-  return String(number / 100).replace(".", ",");
 }

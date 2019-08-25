@@ -10,7 +10,6 @@ import {
   handleGetSms,
   helpResponse,
   openNewOrderWrongOrMissingDateResponse,
-  readableMoneyAmount,
 } from "slashCommands/slashCommands";
 import { getEventStore, initializeEventStore } from "EventStoreService";
 import { Order, OrderItem } from "aggregates/aggregates";
@@ -27,6 +26,7 @@ import {
   refreshOrder,
   createPayment,
 } from "testutils";
+import { readableMoneyAmount } from "eventStoreUtils";
 
 jest.mock("slackApi");
 
