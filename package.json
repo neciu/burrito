@@ -46,7 +46,7 @@
     "koa": "2.6.2",
     "koa-bodyparser": "4.2.1",
     "koa-route": "3.2.0",
-    "luxon": "1.9.0",
+    "luxon": "2.5.2",
     "uuid": "3.3.2"
   },
   "cacheDirectories": [
